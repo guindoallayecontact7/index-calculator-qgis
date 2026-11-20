@@ -1,4 +1,4 @@
-# Index Calculator 5.5.0
+# Index Calculator Pro 5.5.0
 
 ![Index Calculator](logo.png)
 
