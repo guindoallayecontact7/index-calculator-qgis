@@ -2,15 +2,16 @@
 name=Index Calculator Pro
 qgisMinimumVersion=3.16
 qgisMaximumVersion=4.99
-description=Index Calculator Pro, developed by Allaye GUINDO, is an agricultural geospatial add-on for QGIS. It searches and downloads Sentinel-2 and Landsat 4-9 scenes for a defined area of interest, computes 80 spectral indices from the downloaded bands, and provides 55 Processing Toolbox algorithms covering index calculation, field statistics, crop monitoring, temporal comparison, stress detection and ranking, raster quality control, sensor and band mapping, harmonization, cloud masking, parcel delineation, boundary extraction, parcel shape, fusion, topology, candidate refinement and crop pattern clustering.
+description=Index Calculator Pro helps you turn a satellite scene into usable crop information inside QGIS. Search and download a Sentinel-2 or Landsat 4-9 scene for your area, check the bands, then compute 80 vegetation, water, soil and built-up indices. The same package brings 55 Processing Toolbox algorithms for field statistics, crop monitoring, stress ranking, cloud masking and parcel analysis. Developed by Allaye GUINDO.
 version=5.5.0
 author=Allaye GUINDO
 email=345021947+guindoallayecontact7@users.noreply.github.com
 
-about=Index Calculator Pro - Agricultural Geospatial Intelligence System, designed and developed by Allaye GUINDO.
+about=Index Calculator Pro - Agricultural Geospatial Intelligence System.
+      Written and maintained by Allaye GUINDO.
       GitHub: https://github.com/guindoallayecontact7/index-calculator-qgis
 
-      A single workspace for four tasks: fetch a satellite scene for a zone, check the bands, compute the indices, and analyse the fields. All processing runs locally; the only network use is the optional scene download from public STAC catalogues.
+      The whole workflow stays in one window: fetch a scene for a zone, check the bands, compute the indices, then look at the fields. Everything runs on your own machine. The only network use is the optional scene download from public STAC catalogues, and it happens only when you click Search or Download.
 
       HOW TO USE:
       1. Optional: in the IMAGE tab, open Search and download products, set the area of interest (active layer, GeoJSON/SHP/GPKG boundary or rectangle drawn on the map), search a date range and download the product.

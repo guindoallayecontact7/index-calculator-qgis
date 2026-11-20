@@ -16,7 +16,7 @@ class FormulaViewerDialog(QDialog):
     def __init__(self, satellite="sentinel2", parent=None):
         super().__init__(parent)
         self.satellite = satellite
-        self.setWindowTitle("Index Calculator - Spectral Formula Library")
+        self.setWindowTitle("Index Calculator Pro - Spectral Formula Library")
         self.setMinimumWidth(480)
         self.setMinimumHeight(550)
         self._build_ui()

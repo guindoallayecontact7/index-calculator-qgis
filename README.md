@@ -2,7 +2,7 @@
 
 ![Index Calculator](logo.png)
 
-Extension QGIS de télédétection agricole, conçue et développée par Allaye GUINDO.
+Extension QGIS de télédétection agricole, écrite et maintenue par Allaye GUINDO.
 
 - Auteur : Allaye GUINDO
 - GitHub : https://github.com/guindoallayecontact7/index-calculator-qgis
@@ -10,10 +10,10 @@ Extension QGIS de télédétection agricole, conçue et développée par Allaye 
 
 ## Présentation
 
-Index Calculator réunit dans une seule fenêtre le téléchargement d'une scène
-satellite pour une zone donnée, le contrôle des bandes, le calcul des indices
-spectraux et l'analyse des parcelles. Tous les traitements s'exécutent en local ;
-le réseau ne sert qu'au téléchargement facultatif des scènes.
+Index Calculator Pro garde tout le travail dans une seule fenêtre : télécharger
+une scène pour une zone, vérifier les bandes, calculer les indices spectraux,
+puis lire les parcelles. Les traitements tournent en local. Le réseau ne sert
+qu'au téléchargement facultatif des scènes.
 
 ## Fonctions
 

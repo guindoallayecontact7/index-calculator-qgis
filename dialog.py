@@ -88,7 +88,7 @@ class MainDialog(QDialog):
         self.image_input = None
         self.shp_path = None
 
-        self.setWindowTitle("Index Calculator")
+        self.setWindowTitle("Index Calculator Pro")
         self.setMinimumWidth(680)
         self.setMinimumHeight(720)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
@@ -105,7 +105,7 @@ class MainDialog(QDialog):
         banner.setFixedHeight(56)
         blay = QHBoxLayout(banner)
         blay.setContentsMargins(16, 0, 16, 0)
-        t1 = QLabel("Index Calculator")
+        t1 = QLabel("Index Calculator Pro")
         t2 = QLabel(f"Sentinel-2 and Landsat 4-9, {len(INDICES)} indices")
         bv = QVBoxLayout(); bv.setSpacing(1)
         bv.addWidget(t1); bv.addWidget(t2)

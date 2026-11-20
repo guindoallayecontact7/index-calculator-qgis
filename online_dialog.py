@@ -155,7 +155,7 @@ class OnlineImageryDialog(QDialog):
         self._previous_tool = None
         self._map_tool = None
 
-        self.setWindowTitle("Download products - Index Calculator")
+        self.setWindowTitle("Download products - Index Calculator Pro")
         self.setMinimumWidth(700)
         self.setMinimumHeight(640)
         self._build()

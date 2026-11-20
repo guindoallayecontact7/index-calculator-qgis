@@ -29,14 +29,14 @@ class IndexCalculatorPlugin:
         icon_path = os.path.join(self.plugin_dir, "icon.png")
         icon = QIcon(icon_path)
 
-        self.action = QAction(icon, "Index Calculator", self.iface.mainWindow())
+        self.action = QAction(icon, "Index Calculator Pro", self.iface.mainWindow())
         self.action.setToolTip(
-            "Index Calculator\n"
+            "Index Calculator Pro\n"
             "Calculate NDVI, EVI, NDWI and 77 more indices\n"
             "from Sentinel-2 or Landsat imagery"
         )
         self.action.setWhatsThis(
-            "Opens the Index Calculator dialog. "
+            "Opens the Index Calculator Pro dialog. "
             "Supports Sentinel-2 and Landsat 4-9. "
             "Calculates 80 spectral indices including NDVI, EVI, NDWI, BSI, LAI and more."
         )
@@ -45,9 +45,9 @@ class IndexCalculatorPlugin:
 
         # Add to Raster menu and toolbar
         self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToRasterMenu("&Index Calculator", self.action)
+        self.iface.addPluginToRasterMenu("&Index Calculator Pro", self.action)
 
-        self.raster_action = QAction("Index Calculator - Analyse raster de la couche active", self.iface.mainWindow())
+        self.raster_action = QAction("Index Calculator Pro - Analyse raster de la couche active", self.iface.mainWindow())
         self.raster_action.setToolTip("Statistiques de la bande 1 du raster actif et lecture préliminaire")
         self.raster_action.triggered.connect(self.analyze_active_raster)
         self.iface.addPluginToRasterMenu("&Index Calculator", self.raster_action)
