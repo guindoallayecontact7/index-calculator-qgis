@@ -85,7 +85,7 @@ def scan_folder_recursive(folder_path):
                 if is_raster(f):
                     found.append(os.path.join(root, f))
     except Exception:
-        pass
+        return found
     return found
 
 

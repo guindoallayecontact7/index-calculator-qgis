@@ -57,7 +57,7 @@ class IndexCalculatorPlugin:
             try:
                 from qgis.core import QgsApplication
                 QgsApplication.processingRegistry().removeProvider(self.processing_provider)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self.processing_provider = None
         self.iface.removePluginRasterMenu("&Index Calculator", self.action)

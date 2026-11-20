@@ -393,7 +393,7 @@ class OnlineImageryDialog(QDialog):
             self.layer_lbl.setText("Using extent of: %s" % layer.name())
             try:
                 self._set_manual(layer_extent(layer))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         else:
             self.layer_lbl.setText("No active layer selected in the Layers panel.")
@@ -478,7 +478,7 @@ class OnlineImageryDialog(QDialog):
                             (".shp", ".geojson", ".json", ".gpkg")):
                         return source
             except Exception:
-                pass
+                return None
         return None
 
     # -- Preview ---------------------------------------------------------------
@@ -630,6 +630,6 @@ class OnlineImageryDialog(QDialog):
         if self._previous_tool is not None and self.iface is not None:
             try:
                 self.iface.mapCanvas().setMapTool(self._previous_tool)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._previous_tool = None

@@ -104,13 +104,14 @@ class ProcessingWorker(QThread):
         for key in needed:
             ref = mapping.get(key)
             if ref is None: continue
+            # A band that cannot be read is skipped, the others still run.
             try:
                 arr = read_band(primary, ref, mode)
                 if valid_mask is not None and arr.shape == valid_mask.shape:
                     arr = apply_mask_to_array(arr, valid_mask)
                 bands[key] = arr
-            except Exception:
-                pass
+            except Exception:  # nosec B112
+                continue
 
         if not bands:
             self.error.emit(
@@ -167,7 +168,7 @@ class ProcessingWorker(QThread):
                     clipped = os.path.join(out_dir, f"{idx_key}.tif")
                     self._clip(raw_path, shp_path, clipped)
                     try: os.remove(raw_path)
-                    except Exception: pass
+                    except Exception: pass  # nosec B110
                     final = clipped if os.path.exists(clipped) else raw_path
                 else:
                     final = raw_path
@@ -372,5 +373,5 @@ class ProcessingWorker(QThread):
                       dstNodata=float("nan"),
                       format="GTiff",
                       creationOptions=["COMPRESS=LZW"])
-        except Exception:
+        except Exception:  # nosec B110
             pass

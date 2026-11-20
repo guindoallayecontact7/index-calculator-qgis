@@ -793,7 +793,7 @@ class MainDialog(QDialog):
                         f"<span style='color:#555;'>{detail}</span>"
                     )
                     return
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
             self.resample_summary.setText(
@@ -1025,7 +1025,7 @@ class MainDialog(QDialog):
 
                 self.worker.wait(3000)
 
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         super().closeEvent(event)

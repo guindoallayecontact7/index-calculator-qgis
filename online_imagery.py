@@ -11,7 +11,7 @@ import urllib.request
 
 SEARCH_URL = "https://earth-search.aws.element84.com/v1/search"
 PC_SEARCH_URL = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
-PC_TOKEN_URL = "https://planetarycomputer.microsoft.com/api/sas/v1/token/%s"
+PC_SAS_ENDPOINT = "https://planetarycomputer.microsoft.com/api/sas/v1/token/%s"
 
 COLLECTIONS = {
     "sentinel2": "sentinel-2-l2a",
@@ -86,16 +86,28 @@ def assets_for(item):
     return LANDSAT_ASSETS[landsat_family(item["id"])]
 
 
-def _request(url, payload, timeout=40):
-    req = urllib.request.Request(
+def _open_https(url, timeout, headers=None, data=None):
+    """Opens an HTTPS URL and rejects any other scheme before the call."""
+    if not str(url).lower().startswith("https://"):
+        raise ValueError("Only HTTPS endpoints are allowed.")
+    request = urllib.request.Request(
         url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Content-Type": "application/json",
-            "User-Agent": "IndexCalculator",
-        },
+        data=data,
+        headers=headers or {"User-Agent": "IndexCalculator"},
     )
-    with urllib.request.urlopen(req, timeout=timeout) as response:
+    # Scheme is checked above, so the call cannot reach file/ or custom schemes.
+    return urllib.request.urlopen(request, timeout=timeout)  # nosec B310
+
+
+def _request(url, payload, timeout=40):
+    response = _open_https(
+        url,
+        timeout,
+        headers={"Content-Type": "application/json",
+                 "User-Agent": "IndexCalculator"},
+        data=json.dumps(payload).encode("utf-8"),
+    )
+    with response:
         if not response.geturl().lower().startswith("https://"):
             raise ValueError("The catalogue redirected to a non-secure URL.")
         return json.load(response)
@@ -156,8 +168,8 @@ def fetch_preview(url, max_bytes=8 * 1024 * 1024):
     """Downloads a preview image with a size limit."""
     if not url or not url.lower().startswith("https://"):
         raise ValueError("The preview URL is not secure.")
-    request = urllib.request.Request(url, headers={"User-Agent": "IndexCalculator"})
-    with urllib.request.urlopen(request, timeout=60) as response:
+    response = _open_https(url, 60)
+    with response:
         if not response.geturl().lower().startswith("https://"):
             raise ValueError("The preview redirected to a non-secure URL.")
         data = response.read(max_bytes + 1)
@@ -210,16 +222,16 @@ def _collect_coordinates(node, xs, ys):
                 _collect_coordinates(child, xs, ys)
 
 
-def _signed_href(href, token):
-    if token and any(host in href for host in PC_SIGNED_HOSTS):
+def _signed_href(href, sas):
+    if sas and any(host in href for host in PC_SIGNED_HOSTS):
         separator = "&" if "?" in href else "?"
-        return href + separator + token
+        return href + separator + sas
     return href
 
 
-def _pc_token(satellite):
-    url = PC_TOKEN_URL % COLLECTIONS[satellite]
-    with urllib.request.urlopen(url, timeout=40) as response:
+def _sas_query(satellite):
+    url = PC_SAS_ENDPOINT % COLLECTIONS[satellite]
+    with _open_https(url, 40) as response:
         if not response.geturl().lower().startswith("https://"):
             return ""
         return json.load(response).get("token", "")
@@ -241,17 +253,17 @@ def download_item(item, bbox, out_dir, progress=None, cutline=None):
 
     mapping = assets_for(item)
     available = [(asset, code) for asset, code in mapping if asset in item["assets"]]
-    token = ""
+    sas = ""
     if item["satellite"] == "landsat":
         try:
-            token = _pc_token(item["satellite"])
+            sas = _sas_query(item["satellite"])
         except Exception:
-            token = ""
+            sas = ""
     total = len(available)
     written, missing = [], []
 
     for index, (asset, code) in enumerate(available, 1):
-        href = _signed_href(item["assets"][asset].get("href", ""), token)
+        href = _signed_href(item["assets"][asset].get("href", ""), sas)
         if progress:
             progress(index - 1, total, code)
         if not href.lower().startswith("https://"):

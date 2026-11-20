@@ -1,4 +1,4 @@
-# Index Calculator Pro 5.5.0
+# Index Calculator Pro 5.5.1
 
 ![Index Calculator](logo.png)
 
@@ -77,7 +77,7 @@ QGIS > Extensions > Gérer et installer les extensions > Installer depuis un ZIP
 QGIS 3.16+ (testé sur 3.44 LTR), GDAL et numpy fournis par QGIS. Une connexion
 Internet est nécessaire uniquement pour le téléchargement en ligne des scènes.
 
-## Statut de validation (5.5.0, stable)
+## Statut de validation (5.5.1, stable)
 
 - Import de tous les modules Python : OK.
 - Enregistrement du provider Processing : 55 algorithmes, aucun doublon.
@@ -92,9 +92,10 @@ Internet est nécessaire uniquement pour le téléchargement en ligne des scène
 - Correspondance des bandes Landsat 4-7 (B1 à B5, B7) et 8-9 (B2 à B7) : OK.
 - Découpe sur limite testée sur une scène réelle avec un polygone triangulaire :
   emprise réduite, 50 % de pixels masqués en NoData 0.
-- Contrôles de sécurité : accès réseau limité à HTTPS, redirections non HTTPS
-  refusées, URL de bandes non HTTPS ignorées, emprise validée en WGS84, archive
-  sans binaire ni chemin absolu.
+- Contrôles de sécurité : tous les appels réseau passent par une seule fonction
+  HTTPS, redirections non HTTPS refusées, URL de bandes non HTTPS ignorées,
+  emprise validée en WGS84, archive sans binaire ni chemin absolu. Scan Bandit
+  du dépôt QGIS : aucun constat.
 - Calcul des indices sur la scène téléchargée : OK.
 - Non testé : interface complète sur données Sentinel-2/Landsat réelles
   (chargement, style, worker) et compatibilité QGIS 4.x / PyQt6.
