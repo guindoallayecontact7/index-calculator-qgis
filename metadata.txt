@@ -1,0 +1,132 @@
+[general]
+name=Index Calculator
+qgisMinimumVersion=3.16
+qgisMaximumVersion=4.99
+description=Index Calculator, developed by Allaye GUINDO, is an agricultural geospatial add-on for QGIS. It searches and downloads Sentinel-2 and Landsat 4-9 scenes for a defined area of interest, computes 80 spectral indices from the downloaded bands, and provides 55 Processing Toolbox algorithms covering index calculation, field statistics, crop monitoring, temporal comparison, stress detection and ranking, raster quality control, sensor and band mapping, harmonization, cloud masking, parcel delineation, boundary extraction, parcel shape, fusion, topology, candidate refinement and crop pattern clustering.
+version=5.5.0
+author=Allaye GUINDO
+email=345021947+guindoallayecontact7@users.noreply.github.com
+
+about=Index Calculator - Agricultural Geospatial Intelligence System, designed and developed by Allaye GUINDO.
+      GitHub: https://github.com/guindoallayecontact7/index-calculator-qgis
+
+      A single workspace for four tasks: fetch a satellite scene for a zone, check the bands, compute the indices, and analyse the fields. All processing runs locally; the only network use is the optional scene download from public STAC catalogues.
+
+      HOW TO USE:
+      1. Optional: in the IMAGE tab, open Search and download products, set the area of interest (active layer, GeoJSON/SHP/GPKG boundary or rectangle drawn on the map), search a date range and download the product.
+      2. Or load a folder of Sentinel-2 or Landsat bands (.jp2 or .tif) with drag and drop.
+      3. Check the automatically mapped bands and set the resampling resolution and method.
+      4. Open the INDICES tab, filter or use a category preset, then pick the indices.
+      5. Click Generate Indices.
+      6. Click Apply on Band Rendering to style the generated layers.
+
+      SPECTRAL LIBRARY (80 indices):
+      Vegetation (27): NDVI, EVI, EVI2, SAVI, GNDVI, NDRE, MSAVI, MSAVI2, OSAVI, RDVI, VARI, TGI, GLI, MTVI2, RVI, DVI, IPVI, NGRDI, GRVI, TVI, ATSAVI, TNDVI, GEMI, PVI, MSR, ARVI, MCARI2.
+      Chlorophyll (6): ClRE, MTCI, RENDVI, NDRE2, CVI, LCI.
+      Water (12): NDWI, NDMI, LSWI, MSI, MNDWI, WRI, AWEI, SWI, NMDI, GVMI, NWI, MBWI.
+      Soil (11): BSI, RI, NDTI, CI, GSAVI, TSAVI, EEVI, SOCI, SI, BI, ALBEDO.
+      Stress (8): NDSI, PRI, CRI, ARI, SIPI, PSRI, DSWI, RVSI.
+      Crop (8): LAI, CCCI, GCVI, WDRVI, MCARI, TCARI, IRECI, S2REP.
+      Burn (4): NBR, NBR2, BAI, MIRBI.
+      Built-up (4): NDBI, UI, IBI, EBBI.
+
+      WORKSPACE FEATURES:
+      - Three-tab layout: Image, Processing, Indices
+      - Online search and area-limited download (Sentinel-2 L2A, Landsat 4-9 C2 L2), clipped to the boundary polygon
+      - Quick index filter and category presets
+      - Automatic band mapping for Sentinel-2 and Landsat 4-9 (TM, ETM+, OLI/TIRS)
+      - Resampling to 10 m, 30 m or a custom resolution
+      - Cloud masking with SCL (Sentinel-2) or QA_PIXEL (Landsat)
+      - Colour ramps from the actual raster values, layers grouped by category
+      - Formula viewer with formula, bands and interpretation
+      - Boundary clipping for SHP, GeoJSON and GPKG
+      - Quicklook preview of the selected product before download
+      - Optional automatic correction: digital numbers to reflectance, haze removal and low-contrast rescaling
+
+      SUPPORTED FILE FORMATS:
+      .jp2 (Sentinel-2 individual bands), .tif/.tiff (Landsat or multi-band), .img, .vrt
+
+      REQUIREMENTS:
+      - QGIS 3.16 or higher (including QGIS 4.x)
+      - GDAL (included with QGIS by default)
+      - Internet connection only for the optional online scene download
+
+      PRIVACY AND NETWORK:
+      - No account, no telemetry, no credential storage.
+      - Network access happens only when Search products or Download product is clicked.
+      - All scene requests use HTTPS from public STAC catalogues.
+      - All other processing runs locally on the user machine.
+
+tracker=https://github.com/guindoallayecontact7/index-calculator-qgis
+repository=https://github.com/guindoallayecontact7/index-calculator-qgis
+homepage=https://github.com/guindoallayecontact7/index-calculator-qgis
+
+tags=online download, STAC, Sentinel-2 download, Landsat download, area of interest, geojson, agriculture, remote sensing, satellite, spectral indices, NDVI, EVI, NDWI, NDMI, BSI, LAI, SAVI, Water, Soil, Stress, Crop, Burn, Built-up, vegetation, crop health, Sentinel-2, Landsat, raster, band calculator, precision agriculture, soil, water stress, burn, cloud mask, field boundary, shapefile, jp2, one click, resampling, index calculator
+
+category=Raster
+icon=icon.png
+experimental=False
+deprecated=False
+server=False
+hasProcessingProvider=yes
+
+changelog=
+    5.5.0 - Landsat 4-5 TM, 7 ETM+ and 8-9 OLI/TIRS search and band mapping
+           - Product type filter for all Landsat missions or a single generation
+           - Preview the selected product before downloading it
+           - Optional automatic radiometric and atmospheric correction
+           - Landsat digital numbers converted with the Collection 2 coefficients
+    5.4.1 - Security hardening: HTTPS-only scene assets, secure redirects, validated WGS84 area
+    5.4.0 - Download clipped to the boundary polygon; pixels outside the boundary set to NoData 0
+           - Active vector layer or imported GeoJSON/SHP/GPKG used as clipping cutline
+    5.3.0 - Download panel reorganised into Product search, Area of interest, Product list, Download and Log sections
+           - Main panels named and arranged in the same section style (INPUT, RESAMPLING SETTINGS, BAND SET, CLOUD MASKING)
+           - Area coordinates filled from active layer, boundary file or map rectangle
+    5.2.1 - Official Index Calculator logo added (plugin icon and logo file)
+    5.2.0 - Original project identity and documentation by Allaye GUINDO
+           - New original plugin icon and rewritten description and help text
+           - Quick index filter and one-click category presets
+    5.1.1 - Removed external tool references from index titles and descriptions
+    5.1.0 - Stable release. Author: Allaye GUINDO
+           - Online Sentinel-2 and Landsat search and download through public STAC (no account)
+           - Area of interest from active layer, GeoJSON/SHP/GPKG boundary or map-drawn rectangle
+           - Only the selected area is downloaded as GeoTIFF bands, then processed normally
+           - Interface reorganised into Image / Processing / Indices tabs
+    5.0.0 - Renamed the plugin to Index Calculator
+           - Added 28 indices (80 total) and a Chlorophyll and Red Edge category
+           - Removed icon glyphs, em dashes and custom UI colors; native QGIS styling
+           - Processing provider identifier is now index_calculator
+    4.6.1 - Fixed Processing provider load (QgsRasterCalculator imported from qgis.analysis)
+           - Fixed QgsRasterCalculator call on QGIS 3.44 LTR (feedback argument)
+           - Fixed Polygonize/DN field handling on GDAL >= 3.11 in field delineation and boundary extraction
+           - Fixed OGR feature iteration in field delineation and boundary extraction
+           - Cleaned metadata (single changelog block) and packaged release
+    4.6.0 - Crop Pattern Intelligence (spectral/temporal clustering)
+    4.5.0 - Parcel Candidate Refinement
+    4.4.0 - Parcel Topology Intelligence
+    4.3.0 - Parcel Intelligence Fusion
+    4.2.0 - Parcel Shape Intelligence
+    4.1.0 - Boundary Extraction & Candidate Region Polygonizer
+    4.0.0 - Edge Intelligence + Multi-date Fusion
+    3.9.0 - Automatic Field Delineation
+    3.8.0 - Crop Parcel Intelligence Engine
+    3.7.0 - Agricultural Intelligence Engine
+    3.6.0 - Cloud & Shadow Intelligence
+    3.5.0 - Agricultural Preprocessing Pipeline
+    3.4.0 - Automatic Raster Harmonization Engine
+    3.3.0 - Automatic Band Mapping & Raster Harmonization
+    3.2.0 - Sensor Intelligence Engine
+    3.1.0 - Quality & Uncertainty Engine
+    3.0.0 - Scientific Core
+    2.9.0 - Scientific Core
+    2.8.0 - Crop Time Series
+    2.7.0 - Agricultural Intelligence Engine
+    2.6.0 - Stress Detection & Field Ranking
+    2.5.0 - Crop Monitoring
+    2.4.0 - Field Intelligence Prototype
+    2.3.0 - Processing Toolbox Prototype
+    2.2.0 - Spectral Index Library
+    2.1.0 - First Index Calculator build: own branding and Raster Insight action
+    1.2.3 - Compatibility fixes for QGIS 4.x / PyQt6 enums
+    1.2.0 - 52-index catalogue, colour ramps, boundary clipping
+    1.0.0 - Initial release with 52 spectral indices
