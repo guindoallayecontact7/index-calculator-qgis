@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.8 - parcel-level crop index statistics and transparent classes."""
+"""Index Calculator Pro - parcel-level crop index statistics and transparent classes."""
 from qgis.core import (
     QgsProcessingAlgorithm, QgsProcessingParameterFeatureSource,
     QgsProcessingParameterRasterLayer, QgsProcessingParameterFeatureSink,
@@ -42,19 +42,19 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
     def group(self): return 'Parcel analysis'
     def groupId(self): return 'crop_parcel_intelligence'
     def shortHelpString(self):
-        return ('Calcul des statistiques d’un raster d’indice à l’intérieur de polygones agricoles. '
-                'Ajoute superficie, min/max/moyenne/médiane/écart-type, pixels valides, couverture estimée, '
-                'classe de vigueur paramétrable et niveau de confiance basé uniquement sur le nombre de pixels. '
-                'Les classes LOW/MODERATE/HIGH sont des seuils exploratoires, pas un diagnostic agronomique. '
-                'Raster et parcelles doivent être alignés en CRS; raster échantillonné par centres de pixels.')
+        return ('Computes statistics of an index raster inside agricultural polygons. '
+                'Adds area, min/max/mean/median/standard deviation, valid pixels, estimated coverage, '
+                'a configurable vigour class and a confidence level based only on the pixel count. '
+                'The LOW/MODERATE/HIGH classes are exploratory thresholds, not an agronomic diagnosis. '
+                'Raster and parcels must share the CRS; the raster is sampled at pixel centres.')
     def createInstance(self): return CropParcelIntelligenceAlgorithm()
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Parcelles agricoles (polygones)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.INDEX, 'Raster d’indice (bande 1)'))
-        self.addParameter(QgsProcessingParameterString(self.INDEX_NAME, 'Nom de l’indice', defaultValue='NDVI'))
-        self.addParameter(QgsProcessingParameterNumber(self.LOW, 'Seuil inférieur (classe LOW)', QgsProcessingParameterNumber.Double, 0.20))
-        self.addParameter(QgsProcessingParameterNumber(self.MEDIUM, 'Seuil supérieur LOW / MODERATE', QgsProcessingParameterNumber.Double, 0.45))
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Parcelles analysées'))
+        self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Agricultural parcels (polygons)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.INDEX, 'Index raster (band 1)'))
+        self.addParameter(QgsProcessingParameterString(self.INDEX_NAME, 'Index name', defaultValue='NDVI'))
+        self.addParameter(QgsProcessingParameterNumber(self.LOW, 'Lower threshold (LOW class)', QgsProcessingParameterNumber.Double, 0.20))
+        self.addParameter(QgsProcessingParameterNumber(self.MEDIUM, 'Upper threshold LOW / MODERATE', QgsProcessingParameterNumber.Double, 0.45))
+        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Analysed parcels'))
     def processAlgorithm(self, parameters, context, feedback):
         source=self.parameterAsSource(parameters,self.PARCELS,context)
         raster=self.parameterAsRasterLayer(parameters,self.INDEX,context)
@@ -63,16 +63,16 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
         if source is None or raster is None or not raster.isValid():
             raise QgsProcessingException('Source polygonale ou raster invalide.')
         if low >= medium:
-            raise QgsProcessingException('Le seuil LOW doit être inférieur au seuil MODERATE/HIGH.')
+            raise QgsProcessingException('The LOW threshold must be lower than the MODERATE/HIGH threshold.')
         if source.sourceCrs()!=raster.crs():
-            raise QgsProcessingException('CRS différents : reprojeter les parcelles ou le raster avant traitement.')
+            raise QgsProcessingException('Different CRS: reproject the parcels or the raster before processing.')
         if source.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
-            raise QgsProcessingException('La couche de parcelles doit contenir des polygones.')
+            raise QgsProcessingException('The parcel layer must contain polygons.')
         if raster.crs().mapUnits()!=QgsUnitTypes.DistanceMeters:
-            raise QgsProcessingException('Superficie en hectares fiable uniquement avec un CRS projeté en mètres. Reprojeter la couche.')
+            raise QgsProcessingException('Area in hectares is only reliable with a projected CRS in metres. Reproject the layer.')
         extent=raster.extent(); cols=raster.width(); rows=raster.height(); provider=raster.dataProvider()
         block=provider.block(1,extent,cols,rows)
-        if block is None or block.isEmpty(): raise QgsProcessingException('Impossible de lire la bande raster.')
+        if block is None or block.isEmpty(): raise QgsProcessingException('The raster band could not be read.')
         dx=extent.width()/cols; dy=extent.height()/rows; nodata=block.noDataValue(); pixel_area=dx*dy
         out_fields=QgsFields(source.fields())
         additions=[
@@ -85,7 +85,7 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
         ]
         for fld in additions: out_fields.append(fld)
         (sink,dest)=self.parameterAsSink(parameters,self.OUTPUT,context,out_fields,source.wkbType(),source.sourceCrs())
-        if sink is None: raise QgsProcessingException('Création de la sortie impossible.')
+        if sink is None: raise QgsProcessingException('The output could not be created.')
         total=source.featureCount(); done=0
         for feature in source.getFeatures():
             if feedback.isCanceled(): break

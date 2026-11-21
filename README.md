@@ -1,6 +1,6 @@
-# Index Calculator Pro 5.5.2
+# Index Calculator Pro 5.5.5
 
-![Index Calculator](logo.png)
+![Index Calculator Pro](logo.png)
 
 Extension QGIS de télédétection agricole, écrite et maintenue par Allaye GUINDO.
 
@@ -38,11 +38,12 @@ qu'au téléchargement facultatif des scènes.
 - **Filtre et préréglages d'indices** : recherche par nom ou catégorie et
   sélection en un clic d'une famille d'indices.
 - **Raster Insight** : statistiques et lecture préliminaire de la couche active.
-- **Boîte à outils Traitement (55 algorithmes)** :
+- **Boîte à outils Traitement (56 algorithmes)** :
   - bibliothèque d'indices spectraux (25 algorithmes) ;
   - statistiques zonales, suivi de culture, séries temporelles, détection de
     stress et classement de parcelles ;
   - registre des méthodes scientifiques et banc de tests numériques ;
+  - audit de sécurité du code de l'extension ;
   - audit raster et contrôle d'alignement ;
   - compatibilité capteur et cartographie automatique des bandes ;
   - harmonisation raster et alignement GDAL Warp sur une grille de référence ;
@@ -52,12 +53,16 @@ qu'au téléchargement facultatif des scènes.
 
 ## Interface
 
-Trois onglets : IMAGE, PROCESSING et INDICES.
+La fenêtre principale suit trois étapes numérotées : **1 Image** (source,
+capteur, limite de découpage), **2 Settings** (rééchantillonnage, corrections,
+dossier de sortie) et **3 Indices** (recherche, préréglages, sélection). Une
+barre d'état rappelle le capteur, les bandes reconnues, le nombre d'indices et
+le dossier de sortie. Chaque calcul écrit dans son propre sous-dossier daté.
 
-Le panneau **Download products** est organisé en cinq sections : Product search
+Le panneau **Download products** est organisé en sections numérotées : Product search
 (type de produit, dates, couverture nuageuse), Area of interest (coordonnées
 Nord/Sud/Est/Ouest, couche active, fichier de limite ou rectangle tracé sur la
-carte), Product list (tableau Date / Cloud cover / Product ID, bouton de
+carte), Products found (tableau Date / Cloud cover / Product ID, bouton de
 prévisualisation), Download (répertoire de sortie, bouton, barre de progression)
 et Log (journal des opérations).
 
@@ -77,13 +82,20 @@ QGIS > Extensions > Gérer et installer les extensions > Installer depuis un ZIP
 QGIS 3.16+ (testé sur 3.44 LTR), GDAL et numpy fournis par QGIS. Une connexion
 Internet est nécessaire uniquement pour le téléchargement en ligne des scènes.
 
-## Statut de validation (5.5.2, stable)
+## Statut de validation (5.5.5)
+
+Vérifié sur la version 5.5.5, dans QGIS 3.44.15 :
+
+- Chargement de l'extension, enregistrement du provider Processing
+  (56 algorithmes) et ouverture de toutes les fenêtres : OK.
+- Calcul de 9 indices sur une scène Sentinel-2 synthétique (10 bandes) depuis
+  la fenêtre principale, écriture dans un sous-dossier daté : OK.
+- Bandit, detect-secrets et flake8 (erreurs) : aucun constat.
+
+Vérifié pendant le développement, avant la nouvelle interface :
 
 - Import de tous les modules Python : OK.
-- Enregistrement du provider Processing : 55 algorithmes, aucun doublon.
 - Calcul des 80 indices sur bandes synthétiques : OK.
-- Dialogue principal en onglets Image / Processing / Indices, filtre et
-  préréglages de catégorie : OK.
 - Recherche STAC et téléchargement réel d'une scène Sentinel-2 (11 bandes),
   Landsat 8-9 (7 fichiers) et Landsat 7 (7 fichiers) sur une petite zone : OK.
 - Aperçu réel d'une scène Landsat 7 (quicklook Planetary Computer) : OK.

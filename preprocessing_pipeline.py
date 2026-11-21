@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.5 preprocessing pipeline foundation.
+"""Index Calculator Pro preprocessing pipeline foundation.
 QGIS Processing algorithm: validate input and explicitly harmonize to a reference grid.
 This is not radiometric harmonization or cloud/shadow masking.
 """
@@ -46,7 +46,7 @@ if QgsProcessingAlgorithm is not object:
                 raise QgsProcessingException('Input and reference must be different rasters.')
             if source.crs().isValid() is False or ref.crs().isValid() is False:
                 raise QgsProcessingException('Input and reference must have valid CRS definitions.')
-            feedback.pushInfo('Index Calculator preprocessing: validating raster inputs...')
+            feedback.pushInfo('Index Calculator Pro preprocessing: validating raster inputs...')
             feedback.pushInfo('Input: %s | %s | %s x %s' % (source.name(), source.crs().authid(), source.width(), source.height()))
             feedback.pushInfo('Reference: %s | %s | %s x %s' % (ref.name(), ref.crs().authid(), ref.width(), ref.height()))
             feedback.pushInfo('Resampling: %s' % METHODS[max(0, min(method, len(METHODS)-1))])

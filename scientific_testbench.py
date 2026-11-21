@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.0 scientific numerical test bench.
+"""Index Calculator Pro scientific numerical test bench.
 Pure-Python tests use synthetic inputs and verify mathematical behavior only.
 They do not validate raster I/O, sensor preprocessing, or agronomic interpretation.
 """
@@ -62,12 +62,12 @@ def render_test_report(tests=None):
         expected = 'NaN / invalid' if not math.isfinite(t['expected']) else f"{t['expected']:.12g}"
         status = 'PASS' if t['passed'] else 'FAIL'
         rows.append(f"<tr><td>{escape(t['name'])}</td><td>{actual}</td><td>{expected}</td><td class='{status.lower()}'>{status}</td></tr>")
-    return f"""<!doctype html><html lang='fr'><head><meta charset='utf-8'><title>Index Calculator V3.0 - Numerical Test Bench</title>
+    return f"""<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Index Calculator Pro - Numerical Test Bench</title>
 <style>body{{font-family:Segoe UI,Arial,sans-serif;max-width:1000px;margin:30px auto;padding:0 20px;color:#24302a}}h1{{color:#176b3a}}table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #ddd;padding:9px;text-align:left}}th{{background:#edf5ef}}.pass{{color:#16733a;font-weight:bold}}.fail{{color:#b42318;font-weight:bold}}.note{{background:#fff3cd;padding:12px;border-radius:8px}}</style></head><body>
-<h1>Index Calculator - Numerical Test Bench V3.0</h1><p><b>Tests réussis :</b> {passed}/{len(tests)} &nbsp; <b>Échecs :</b> {failed}</p>
-<p class='note'>Tests sur valeurs synthétiques. Ils vérifient des propriétés mathématiques des fonctions de test; ils ne valident pas les chaînes raster QGIS, les prétraitements capteur, les performances agronomiques ni la précision terrain.</p>
-<table><thead><tr><th>Test</th><th>Résultat calculé</th><th>Attendu</th><th>Statut</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
-<h2>Fonctions de référence testées</h2><ul><li>NDVI = (NIR - RED)/(NIR + RED)</li><li>NDMI = (NIR - SWIR1)/(NIR + SWIR1)</li><li>NDRE = (NIR - Red Edge)/(NIR + Red Edge)</li></ul>
+<h1>Index Calculator Pro - Numerical Test Bench</h1><p><b>Tests passed:</b> {passed}/{len(tests)} &nbsp; <b>Failures:</b> {failed}</p>
+<p class='note'>Tests on synthetic values. They check mathematical properties of the test functions; they do not validate QGIS raster chains, sensor preprocessing, agronomic performance or field accuracy.</p>
+<table><thead><tr><th>Test</th><th>Computed result</th><th>Expected</th><th>Status</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<h2>Reference functions tested</h2><ul><li>NDVI = (NIR - RED)/(NIR + RED)</li><li>NDMI = (NIR - SWIR1)/(NIR + SWIR1)</li><li>NDRE = (NIR - Red Edge)/(NIR + Red Edge)</li></ul>
 </body></html>"""
 
 
@@ -80,17 +80,17 @@ try:
         def group(self): return 'Scientific Core'
         def groupId(self): return 'scientific_core'
         def shortHelpString(self):
-            return 'Exécute des tests numériques synthétiques sur les fonctions NDVI, NDMI et NDRE. Ne valide pas le traitement raster ni l’interprétation agronomique.'
+            return 'Runs synthetic numerical tests on the NDVI, NDMI and NDRE functions. Does not validate raster processing or agronomic interpretation.'
         def createInstance(self): return NumericalTestBenchAlgorithm()
         def initAlgorithm(self, config=None):
-            self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT, 'Rapport HTML de tests numériques', 'HTML'))
+            self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT, 'HTML report of numerical tests', 'HTML'))
         def processAlgorithm(self, parameters, context, feedback):
             path = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
             results = run_tests()
             if feedback.isCanceled(): return {}
             with open(path, 'w', encoding='utf-8') as f:
                 f.write(render_test_report(results))
-            feedback.pushInfo(f"Tests réussis : {sum(x['passed'] for x in results)}/{len(results)}")
+            feedback.pushInfo(f"Tests passed: {sum(x['passed'] for x in results)}/{len(results)}")
             return {self.OUTPUT: path}
 except ImportError:
     NumericalTestBenchAlgorithm = None

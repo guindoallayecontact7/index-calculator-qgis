@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator spectral indices exposed through the QGIS Processing Toolbox.
+"""Index Calculator Pro spectral indices exposed through the QGIS Processing Toolbox.
 Prototype algorithms: input rasters must be single-band, reflectance-scaled,
 co-registered, and have matching grid/extent/CRS. No silent resampling occurs.
 """
@@ -61,8 +61,8 @@ class SpectralIndexAlgorithm(QgsProcessingAlgorithm):
     raise QgsProcessingException('Input rasters are not aligned (CRS, dimensions and extent must match). Align/resample first.')
   entries=[]; formula=self.spec[4]
   for role,layer in layers.items():
-   entry=QgsRasterCalculatorEntry(); entry.raster=layer; entry.bandNumber=1; entry.ref=layer.name()+'@1'; entries.append(entry)
-   formula=formula.replace(role,'"'+layer.name()+'@1"')
+   entry=QgsRasterCalculatorEntry(); entry.raster=layer; entry.bandNumber=1; entry.ref=role+'@1'; entries.append(entry)
+   formula=formula.replace(role, '"'+role+'@1"')
   output=self.parameterAsOutputLayer(parameters,'OUTPUT',context)
   from .raster_calc import calculate
   erreur=calculate(formula,output,first.extent(),first.crs(),first.width(),first.height(),entries,context.transformContext(),feedback)
@@ -105,6 +105,8 @@ class IndexCalculatorProvider(QgsProcessingProvider):
   self.addAlgorithm(CloudMaskSummaryAlgorithm())
   from .agricultural_intelligence import AgriculturalIntelligencePipelineAlgorithm
   self.addAlgorithm(AgriculturalIntelligencePipelineAlgorithm())
+  from .security_audit import PluginSecurityAuditAlgorithm
+  if PluginSecurityAuditAlgorithm is not None: self.addAlgorithm(PluginSecurityAuditAlgorithm())
   from .crop_parcel_intelligence import CropParcelIntelligenceAlgorithm
   self.addAlgorithm(CropParcelIntelligenceAlgorithm())
   from .automatic_field_delineation import AutomaticFieldDelineationAlgorithm
@@ -124,8 +126,8 @@ class IndexCalculatorProvider(QgsProcessingProvider):
   from .crop_pattern_intelligence import CropPatternClusteringAlgorithm
   self.addAlgorithm(CropPatternClusteringAlgorithm())
  def id(self): return 'index_calculator'
- def name(self): return 'Index Calculator'
- def shortName(self): return 'Index Calculator'
+ def name(self): return 'Index Calculator Pro'
+ def shortName(self): return 'Index Calculator Pro'
  def icon(self):
   from qgis.PyQt.QtGui import QIcon
   import os

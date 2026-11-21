@@ -2,8 +2,8 @@
 name=Index Calculator Pro
 qgisMinimumVersion=3.16
 qgisMaximumVersion=4.99
-description=Index Calculator Pro helps you turn a satellite scene into usable crop information inside QGIS. Search and download a Sentinel-2 or Landsat 4-9 scene for your area, check the bands, then compute 80 vegetation, water, soil and built-up indices. The same package brings 55 Processing Toolbox algorithms for field statistics, crop monitoring, stress ranking, cloud masking and parcel analysis. Developed by Allaye GUINDO.
-version=5.5.2
+description=Index Calculator Pro helps you turn a satellite scene into usable crop information inside QGIS. Search and download a Sentinel-2 or Landsat 4-9 scene for your area, check the bands, then compute 80 vegetation, water, soil and built-up indices. The same package brings 56 Processing Toolbox algorithms for field statistics, crop monitoring, stress ranking, cloud masking and parcel analysis. Developed by Allaye GUINDO.
+version=5.5.5
 author=Allaye GUINDO
 email=guindo.allaye.contact@gmail.com
 
@@ -14,12 +14,10 @@ about=Index Calculator Pro - Agricultural Geospatial Intelligence System.
       The whole workflow stays in one window: fetch a scene for a zone, check the bands, compute the indices, then look at the fields. Everything runs on your own machine. The only network use is the optional scene download from public STAC catalogues, and it happens only when you click Search or Download.
 
       HOW TO USE:
-      1. Optional: in the IMAGE tab, open Search and download products, set the area of interest (active layer, GeoJSON/SHP/GPKG boundary or rectangle drawn on the map), search a date range and download the product.
-      2. Or load a folder of Sentinel-2 or Landsat bands (.jp2 or .tif) with drag and drop.
-      3. Check the automatically mapped bands and set the resampling resolution and method.
-      4. Open the INDICES tab, filter or use a category preset, then pick the indices.
-      5. Click Generate Indices.
-      6. Click Apply on Band Rendering to style the generated layers.
+      1. Image: download a scene for your area (optional), or drop a folder of Sentinel-2 or Landsat bands (.jp2 or .tif). The sensor is detected from the file names.
+      2. Settings: check the resampling resolution and method, cloud masking, automatic correction and the output folder.
+      3. Indices: pick indices one by one, by category or with a preset.
+      4. Click Generate indices. Layers are styled and grouped by category.
 
       SPECTRAL LIBRARY (80 indices):
       Vegetation (27): NDVI, EVI, EVI2, SAVI, GNDVI, NDRE, MSAVI, MSAVI2, OSAVI, RDVI, VARI, TGI, GLI, MTVI2, RVI, DVI, IPVI, NGRDI, GRVI, TVI, ATSAVI, TNDVI, GEMI, PVI, MSR, ARVI, MCARI2.
@@ -32,7 +30,7 @@ about=Index Calculator Pro - Agricultural Geospatial Intelligence System.
       Built-up (4): NDBI, UI, IBI, EBBI.
 
       WORKSPACE FEATURES:
-      - Three-tab layout: Image, Processing, Indices
+      - Three numbered steps: Image, Settings, Indices, with a status line
       - Online search and area-limited download (Sentinel-2 L2A, Landsat 4-9 C2 L2), clipped to the boundary polygon
       - Quick index filter and category presets
       - Automatic band mapping for Sentinel-2 and Landsat 4-9 (TM, ETM+, OLI/TIRS)
@@ -72,6 +70,15 @@ server=False
 hasProcessingProvider=yes
 
 changelog=
+    5.5.5 - Stable release. Every menu, dialog and report titled Index Calculator Pro.
+          - Redesigned main window: header with version and Help, numbered steps (Image, Settings, Indices), dashed drop zone,
+            status line, highlighted Generate button that stays disabled until data and indices are ready.
+          - Output folder can be chosen; each run writes to its own dated sub-folder.
+          - Light default selection (essential indices) and an Essentials preset.
+          - Whole interface, Processing algorithms and reports in English; development version labels removed.
+          - Security review: silent exception handlers now log, scene downloads limited to the exact imagery hosts, package cleaned of compiled and hidden files.
+    5.5.4 - Integrated rule-based Plugin Security Audit report.
+    5.5.3 - Security hardening: URL validation, redirect blocking, scene ID validation, output path checks and raster limits.
     5.5.2 - Author contact email changed to guindo.allaye.contact@gmail.com
     5.5.1 - Every network call now goes through a single HTTPS check, which clears the Bandit findings
             reported by the plugins.qgis.org security scan
@@ -86,7 +93,7 @@ changelog=
     5.3.0 - Download panel reorganised into Product search, Area of interest, Product list, Download and Log sections
            - Main panels named and arranged in the same section style (INPUT, RESAMPLING SETTINGS, BAND SET, CLOUD MASKING)
            - Area coordinates filled from active layer, boundary file or map rectangle
-    5.2.1 - Official Index Calculator logo added (plugin icon and logo file)
+    5.2.1 - Official Index Calculator Pro logo added (plugin icon and logo file)
     5.2.0 - Original project identity and documentation by Allaye GUINDO
            - New original plugin icon and rewritten description and help text
            - Quick index filter and one-click category presets
@@ -96,7 +103,7 @@ changelog=
            - Area of interest from active layer, GeoJSON/SHP/GPKG boundary or map-drawn rectangle
            - Only the selected area is downloaded as GeoTIFF bands, then processed normally
            - Interface reorganised into Image / Processing / Indices tabs
-    5.0.0 - Renamed the plugin to Index Calculator
+    5.0.0 - Renamed the plugin to Index Calculator Pro
            - Added 28 indices (80 total) and a Chlorophyll and Red Edge category
            - Removed icon glyphs, em dashes and custom UI colors; native QGIS styling
            - Processing provider identifier is now index_calculator
@@ -130,7 +137,7 @@ changelog=
     2.4.0 - Field Intelligence Prototype
     2.3.0 - Processing Toolbox Prototype
     2.2.0 - Spectral Index Library
-    2.1.0 - First Index Calculator build: own branding and Raster Insight action
+    2.1.0 - First Index Calculator Pro build: own branding and Raster Insight action
     1.2.3 - Compatibility fixes for QGIS 4.x / PyQt6 enums
     1.2.0 - 52-index catalogue, colour ramps, boundary clipping
     1.0.0 - Initial release with 52 spectral indices

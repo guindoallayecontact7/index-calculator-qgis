@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.4 - non-destructive polygon topology audit.
+"""Index Calculator Pro - non-destructive polygon topology audit.
 The algorithm preserves input geometries and reports validity, overlaps and
 basic geometry characteristics. It does not repair or infer missing boundaries.
 """

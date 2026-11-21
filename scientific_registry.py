@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator Scientific Core: transparent method registry and report generator.
+"""Index Calculator Pro Scientific Core: transparent method registry and report generator.
 
 This module documents the mathematical/scientific basis and limits of algorithms.
 It is intentionally not a validation claim: formulas and models require independent
@@ -105,30 +105,30 @@ def render_scientific_report():
     rows = []
     for name, meta in SCIENTIFIC_REGISTRY.items():
         rows.append(f"""<section class='entry'><h2>{escape(name)}</h2>
-        <p><b>Catégorie :</b> {escape(meta['category'])}</p>
-        <p><b>Formule / méthode :</b> <code>{escape(meta['formula'])}</code></p>
-        <p><b>Entrées :</b> {escape(meta['inputs'])}</p>
-        <p><b>Objectif :</b> {escape(meta['purpose'])}</p>
-        <p><b>Hypothèses :</b> {escape(meta['assumptions'])}</p>
-        <p><b>Limites :</b> {escape(meta['limits'])}</p>
-        <p><b>Niveau de maturité :</b> {escape(meta['status'])}</p>
-        <p><b>Référence / base méthodologique :</b> {escape(meta['reference'])}</p></section>""")
-    header = """<!doctype html><html lang='fr'><head><meta charset='utf-8'>
-    <title>Index Calculator V3.0 - Scientific Method Explorer</title><style>
+        <p><b>Category:</b> {escape(meta['category'])}</p>
+        <p><b>Formula / method:</b> <code>{escape(meta['formula'])}</code></p>
+        <p><b>Inputs:</b> {escape(meta['inputs'])}</p>
+        <p><b>Purpose:</b> {escape(meta['purpose'])}</p>
+        <p><b>Assumptions:</b> {escape(meta['assumptions'])}</p>
+        <p><b>Limits:</b> {escape(meta['limits'])}</p>
+        <p><b>Maturity:</b> {escape(meta['status'])}</p>
+        <p><b>Reference / method basis:</b> {escape(meta['reference'])}</p></section>""")
+    header = """<!doctype html><html lang='en'><head><meta charset='utf-8'>
+    <title>Index Calculator Pro - Scientific Method Explorer</title><style>
     body{font-family:Arial,sans-serif;max-width:1000px;margin:32px auto;padding:0 20px;color:#24302a}
     h1{color:#176b3a}h2{color:#246e44;border-bottom:1px solid #d6e4da;padding-bottom:6px}
     .search{width:100%;padding:12px;border:1px solid #b8c8bd;border-radius:8px;font-size:16px;margin:12px 0}
     .entry[hidden]{display:none}.entry{border:1px solid #d6e4da;border-radius:10px;padding:16px;margin:18px 0}
     code{background:#f2f6f3;padding:4px;border-radius:4px;white-space:normal}
     .note{background:#fff4d6;padding:14px;border-radius:8px}</style></head><body>
-    <h1>Index Calculator V3.0 - Scientific Method Explorer</h1>
-    <input class='search' id='methodSearch' placeholder='Rechercher une méthode, formule, entrée, limite...' aria-label='Rechercher dans les méthodes scientifiques'><p id='searchCount'></p>
-    <p>Registre de transparence méthodologique. Les fiches documentent les formules, hypothèses,
-    limites et maturité. Elles ne constituent pas une validation indépendante des implémentations.</p>
-    <p class='note'><b>Important :</b> les calculs doivent être testés avec des données synthétiques et réelles.
-    Toute interprétation agronomique exige un contexte de culture, de date, de capteur et, si nécessaire,
-    une validation terrain.</p>"""
-    script = """<script>const q=document.getElementById('methodSearch');const entries=[...document.querySelectorAll('.entry')];function filterMethods(){const v=q.value.toLowerCase();let n=0;entries.forEach(e=>{const match=e.innerText.toLowerCase().includes(v);e.hidden=!match;if(match)n++;});document.getElementById('searchCount').textContent=n+' méthode(s) affichée(s)';}q.addEventListener('input',filterMethods);filterMethods();</script></body></html>"""
+    <h1>Index Calculator Pro - Scientific Method Explorer</h1>
+    <input class='search' id='methodSearch' placeholder='Search a method, formula, input, limit...' aria-label='Search the scientific methods'><p id='searchCount'></p>
+    <p>Method transparency register. Each entry documents the formula, assumptions,
+    limits and maturity. It is not an independent validation of the implementation.</p>
+    <p class='note'><b>Important:</b> the calculations must be tested with synthetic and real data.
+    Any agronomic interpretation needs the crop, date and sensor context and, when needed,
+    field validation.</p>"""
+    script = """<script>const q=document.getElementById('methodSearch');const entries=[...document.querySelectorAll('.entry')];function filterMethods(){const v=q.value.toLowerCase();let n=0;entries.forEach(e=>{const match=e.innerText.toLowerCase().includes(v);e.hidden=!match;if(match)n++;});document.getElementById('searchCount').textContent=n+' method(s) shown';}q.addEventListener('input',filterMethods);filterMethods();</script></body></html>"""
     return header + "\n".join(rows) + script
 
 
@@ -141,17 +141,17 @@ try:
         def group(self): return 'Scientific Core'
         def groupId(self): return 'scientific_core'
         def shortHelpString(self):
-            return 'Génère un rapport HTML des bases mathématiques/scientifiques, hypothèses, limites et statuts de validation des modules documentés. Ce rapport décrit les méthodes; il ne certifie pas les résultats.'
+            return 'Generates an HTML report of the mathematical and scientific basis, assumptions, limits and validation status of the documented modules. The report describes the methods; it does not certify the results.'
         def createInstance(self): return ScientificRegistryReportAlgorithm()
         def initAlgorithm(self, config=None):
-            self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT, 'Rapport scientifique HTML', 'HTML'))
+            self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT, 'HTML scientific report', 'HTML'))
         def processAlgorithm(self, parameters, context, feedback):
             path = self.parameterAsFileOutput(parameters, self.OUTPUT, context)
             try:
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(render_scientific_report())
             except Exception as e:
-                raise Exception('Impossible de générer le rapport scientifique : ' + str(e))
+                raise Exception('The scientific report could not be generated: ' + str(e))
             return {self.OUTPUT: path}
 except ImportError:
     ScientificRegistryReportAlgorithm = None

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator crop time-series zonal analysis."""
+"""Index Calculator Pro crop time-series zonal analysis."""
 import math
 from qgis.core import (
     QgsProcessingAlgorithm, QgsProcessing, QgsProcessingParameterFeatureSource,
@@ -23,7 +23,7 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
 
 
     def displayName(self):
-        return 'Crop Time Series - Tendances par parcelle'
+        return 'Crop Time Series - Trends per parcel'
 
     def group(self):
         return 'Crop Monitoring'
@@ -32,12 +32,12 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
         return 'crop_monitoring'
 
     def shortHelpString(self):
-        return ('Analyse une liste ordonnée de rasters mono-bande (un raster par date) dans chaque parcelle. '
-                'Produit les moyennes par date, moyenne générale, écart-type, minimum, maximum, amplitude et pente linéaire '
-                'en unités d indice par pas temporel. Les dates doivent être fournies dans l ordre chronologique. '
-                'Les rasters et parcelles doivent partager un CRS. Les valeurs NoData et non finies sont ignorées. '
-                'La pente utilise les positions 1..N et non des intervalles calendaires exacts; pour des dates irrégulières, '
-                'interpréter avec prudence. Ce traitement ne diagnostique pas directement un stress ou un rendement.')
+        return ('Analyses an ordered list of single-band rasters (one raster per date) in each parcel. '
+                'Produces the mean per date, overall mean, standard deviation, minimum, maximum, range and linear slope '
+                'in index units per time step. Dates must be given in chronological order. '
+                'Rasters and parcels must share a CRS. NoData and non-finite values are ignored. '
+                'The slope uses positions 1..N, not exact calendar intervals; with irregular dates, '
+                'read it with care. This processing does not directly diagnose stress or yield.')
 
     def createInstance(self):
         return CropTimeSeriesAlgorithm()
@@ -45,22 +45,22 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
 
 
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Parcelles agricoles (polygones)'))
-        self.addParameter(QgsProcessingParameterMultipleLayers(self.RASTERS, 'Rasters d indices ordonnés chronologiquement', layerType=QgsProcessing.TypeRaster))
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Parcelles - résultats de série temporelle'))
+        self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Agricultural parcels (polygons)'))
+        self.addParameter(QgsProcessingParameterMultipleLayers(self.RASTERS, 'Index rasters in chronological order', layerType=QgsProcessing.TypeRaster))
+        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Parcels - time series results'))
 
     def processAlgorithm(self, parameters, context, feedback):
         src = self.parameterAsSource(parameters, self.PARCELS, context)
         rasters = self.parameterAsLayerList(parameters, self.RASTERS, context)
         if src is None or not rasters or len(rasters) < 2:
-            raise QgsProcessingException('Sélectionner les parcelles et au moins deux rasters datés, dans l ordre chronologique.')
+            raise QgsProcessingException('Select the parcels and at least two dated rasters, in chronological order.')
         if src.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
-            raise QgsProcessingException('La couche de parcelles doit être polygonale.')
+            raise QgsProcessingException('The parcel layer must be a polygon layer.')
         for r in rasters:
             if r is None or not r.isValid():
-                raise QgsProcessingException('Un raster de la série est invalide.')
+                raise QgsProcessingException('One raster of the series is invalid.')
             if r.crs() != src.sourceCrs():
-                raise QgsProcessingException('Tous les rasters doivent être dans le même CRS que les parcelles. Reprojeter avant analyse.')
+                raise QgsProcessingException('All rasters must be in the same CRS as the parcels. Reproject before the analysis.')
 
         fields = QgsFields(src.fields())
         date_fields = []
@@ -73,7 +73,7 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
         fields.append(QgsField('ag_n_dates', QVariant.Int))
         sink, dest = self.parameterAsSink(parameters, self.OUTPUT, context, fields, src.wkbType(), src.sourceCrs())
         if sink is None:
-            raise QgsProcessingException('Impossible de créer la couche de sortie.')
+            raise QgsProcessingException('The output layer could not be created.')
 
         # Cache raster blocks once; each block is read at native resolution.
         raster_data = []
@@ -81,7 +81,7 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
             ext = raster.extent(); cols = raster.width(); rows = raster.height()
             block = raster.dataProvider().block(1, ext, cols, rows)
             if block is None or block.isEmpty():
-                raise QgsProcessingException('Impossible de lire raster : ' + raster.name())
+                raise QgsProcessingException('Raster could not be read: ' + raster.name())
             raster_data.append((raster, ext, cols, rows, ext.width()/cols, ext.height()/rows, block))
 
         total = max(src.featureCount(), 1); done = 0

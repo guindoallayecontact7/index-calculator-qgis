@@ -1,5 +1,5 @@
 """
-Index Calculator - Agricultural Geospatial Intelligence System for QGIS.
+Index Calculator Pro - Agricultural Geospatial Intelligence System for QGIS.
 Author: Allaye GUINDO
 https://github.com/guindoallayecontact7
 """

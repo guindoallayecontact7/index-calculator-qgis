@@ -1,8 +1,10 @@
+import logging
 import os
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtCore import QSize
 from qgis.PyQt.QtWidgets import QMessageBox
+
+_LOG = logging.getLogger(__name__)
 
 
 class IndexCalculatorPlugin:
@@ -23,7 +25,7 @@ class IndexCalculatorPlugin:
             QgsApplication.processingRegistry().addProvider(self.processing_provider)
         except Exception as e:
             self.processing_provider = None
-            QMessageBox.warning(self.iface.mainWindow(), "Index Calculator",
+            QMessageBox.warning(self.iface.mainWindow(), "Index Calculator Pro",
                                 "The Processing provider could not be loaded: " + str(e))
         # Load icon from plugin folder
         icon_path = os.path.join(self.plugin_dir, "icon.png")
@@ -47,22 +49,22 @@ class IndexCalculatorPlugin:
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToRasterMenu("&Index Calculator Pro", self.action)
 
-        self.raster_action = QAction("Index Calculator Pro - Analyse raster de la couche active", self.iface.mainWindow())
-        self.raster_action.setToolTip("Statistiques de la bande 1 du raster actif et lecture préliminaire")
+        self.raster_action = QAction("Raster Insight (active layer)...", self.iface.mainWindow())
+        self.raster_action.setToolTip("Band 1 statistics of the active raster with a preliminary reading")
         self.raster_action.triggered.connect(self.analyze_active_raster)
-        self.iface.addPluginToRasterMenu("&Index Calculator", self.raster_action)
+        self.iface.addPluginToRasterMenu("&Index Calculator Pro", self.raster_action)
 
     def unload(self):
         if self.processing_provider:
             try:
                 from qgis.core import QgsApplication
                 QgsApplication.processingRegistry().removeProvider(self.processing_provider)
-            except Exception:  # nosec B110
-                pass
+            except Exception as exc:
+                _LOG.debug("Ignored error: %s", exc)
             self.processing_provider = None
-        self.iface.removePluginRasterMenu("&Index Calculator", self.action)
+        self.iface.removePluginRasterMenu("&Index Calculator Pro", self.action)
         if self.raster_action:
-            self.iface.removePluginRasterMenu("&Index Calculator", self.raster_action)
+            self.iface.removePluginRasterMenu("&Index Calculator Pro", self.raster_action)
         self.iface.removeToolBarIcon(self.action)
         if self.dialog:
             self.dialog.close()
@@ -71,7 +73,8 @@ class IndexCalculatorPlugin:
     def analyze_active_raster(self):
         layer = self.iface.activeLayer()
         if layer is None or not layer.isValid() or not hasattr(layer, "bandCount"):
-            QMessageBox.warning(self.iface.mainWindow(), "Index Calculator", "Sélectionne d’abord une couche raster valide dans QGIS.")
+            QMessageBox.warning(self.iface.mainWindow(), "Index Calculator Pro",
+                                "Select a valid raster layer in the Layers panel first.")
             return
         try:
             from qgis.core import QgsRasterBandStats
@@ -79,21 +82,35 @@ class IndexCalculatorPlugin:
             stats = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
             vals = [stats.minimumValue, stats.maximumValue, stats.mean, stats.stdDev]
             if not all(v == v for v in vals):
-                raise ValueError("Statistiques invalides ou raster vide")
+                raise ValueError("Invalid statistics or empty raster.")
             name = layer.name()
-            lname = name.lower()
-            if "ndvi" in lname:
-                low = stats.mean < 0.2
-                high = stats.mean >= 0.5
-                interpretation = ("Indice moyen faible : végétation peu présente ou pixels dominés par sol/eau. Vérifier le contexte." if low else "Indice moyen élevé : signal végétal important. Cela ne confirme pas à lui seul la santé agronomique." if high else "Indice moyen intermédiaire : couverture végétale possible, à interpréter selon la culture et son stade.")
-                classes = f"\nPixels < 0,2 : seuil indicatif ; pixels >= 0,5 : seuil indicatif (classification complète non calculée)."
+            if "ndvi" in name.lower():
+                if stats.mean < 0.2:
+                    interpretation = ("Low mean value: little vegetation, or pixels dominated "
+                                      "by soil or water. Check the context.")
+                elif stats.mean >= 0.5:
+                    interpretation = ("High mean value: strong vegetation signal. This alone "
+                                      "does not confirm crop health.")
+                else:
+                    interpretation = ("Intermediate mean value: possible vegetation cover, to read "
+                                      "according to the crop and its growth stage.")
+                classes = ("\nIndicative thresholds: below 0.2 and from 0.5 "
+                           "(no full classification computed).")
             else:
-                interpretation = "Lecture limitée : le nom de l’indice n’a pas été reconnu. Examiner la formule, les unités, la date et le contexte de la couche."
+                interpretation = ("Limited reading: the index name was not recognised. Check the "
+                                  "formula, units, date and context of the layer.")
                 classes = ""
-            report = (f"Index Calculator - Raster Insight\n\nCouche : {name}\n\nStatistiques (bande 1)\nMinimum : {stats.minimumValue:.4f}\nMaximum : {stats.maximumValue:.4f}\nMoyenne : {stats.mean:.4f}\nÉcart-type : {stats.stdDev:.4f}\n\nAnalyse préliminaire\n{interpretation}{classes}\n\nLimites : analyse descriptive locale. Ne permet pas de confirmer sécheresse, maladie, carence ou rendement. Valider sur le terrain et tenir compte du type de culture, stade, date et conditions d’acquisition.")
-            QMessageBox.information(self.iface.mainWindow(), "Index Calculator - Raster Insight", report)
+            report = (
+                "Layer: %s\n\nBand 1 statistics\nMinimum: %.4f\nMaximum: %.4f\n"
+                "Mean: %.4f\nStandard deviation: %.4f\n\nPreliminary reading\n%s%s\n\n"
+                "Limits: local descriptive statistics only. They cannot confirm drought, disease, "
+                "deficiency or yield. Validate in the field and take the crop type, stage, date "
+                "and acquisition conditions into account."
+                % (name, stats.minimumValue, stats.maximumValue, stats.mean, stats.stdDev,
+                   interpretation, classes))
+            QMessageBox.information(self.iface.mainWindow(), "Index Calculator Pro - Raster Insight", report)
         except Exception as e:
-            QMessageBox.critical(self.iface.mainWindow(), "Index Calculator - Analyse impossible", str(e))
+            QMessageBox.critical(self.iface.mainWindow(), "Index Calculator Pro - Analysis failed", str(e))
 
     def run(self):
         from .dialog import MainDialog

@@ -1,4 +1,4 @@
-"""Index Calculator V3.4 explicit raster harmonization to a reference grid."""
+"""Index Calculator Pro explicit raster harmonization to a reference grid."""
 try:
     from qgis.core import (QgsProcessingAlgorithm, QgsProcessingParameterRasterLayer,
                           QgsProcessingParameterRasterDestination, QgsProcessingParameterEnum,

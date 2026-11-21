@@ -8,6 +8,10 @@ cloud-optimised GeoTIFFs, so downloads stay small.
 import json
 import os
 import urllib.request
+import urllib.error
+import ipaddress
+import re
+from urllib.parse import urlsplit
 
 SEARCH_URL = "https://earth-search.aws.element84.com/v1/search"
 PC_SEARCH_URL = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
@@ -26,6 +30,20 @@ SEARCH_ENDPOINTS = {
 }
 PC_SIGNED_HOSTS = ("landsateuwest.blob.core.windows.net",
                    "sentinel2l2a01.blob.core.windows.net")
+ALLOWED_URL_HOSTS = (
+    "earth-search.aws.element84.com",
+    "planetarycomputer.microsoft.com",
+    "landsateuwest.blob.core.windows.net",
+    "sentinel2l2a01.blob.core.windows.net",
+)
+# Exact hosts that serve scene bands and quicklooks. Any other bucket is refused.
+ALLOWED_ASSET_HOSTS = ALLOWED_URL_HOSTS + (
+    "sentinel-cogs.s3.us-west-2.amazonaws.com",
+)
+SCENE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{1,150}$")
+MAX_RASTER_DIMENSION = 100000
+MAX_RASTER_BANDS = 32
+
 
 # STAC asset name -> output band file code
 ASSETS = {
@@ -86,17 +104,43 @@ def assets_for(item):
     return LANDSAT_ASSETS[landsat_family(item["id"])]
 
 
-def _open_https(url, timeout, headers=None, data=None):
-    """Opens an HTTPS URL and rejects any other scheme before the call."""
-    if not str(url).lower().startswith("https://"):
-        raise ValueError("Only HTTPS endpoints are allowed.")
+def _validated_url(url, asset=False):
+    """Validate an HTTPS URL and its hostname before any network access."""
+    parsed = urlsplit(str(url))
+    if parsed.scheme.lower() != "https" or not parsed.hostname:
+        raise ValueError("Only valid HTTPS URLs are allowed.")
+    if parsed.username or parsed.password or parsed.port not in (None, 443):
+        raise ValueError("URL credentials and non-standard ports are not allowed.")
+    host = parsed.hostname.lower().rstrip(".")
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        address = None
+    if address and (address.is_private or address.is_loopback or address.is_link_local
+                    or address.is_reserved or address.is_unspecified):
+        raise ValueError("Local or private IP destinations are not allowed.")
+    if asset:
+        allowed = host in ALLOWED_ASSET_HOSTS
+    else:
+        allowed = host in ALLOWED_URL_HOSTS
+    if not allowed:
+        raise ValueError("The URL host is not an approved imagery service.")
+    return parsed
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, "Redirect blocked", headers, fp)
+
+
+def _open_https(url, timeout, headers=None, data=None, asset=False):
+    """Open an approved HTTPS URL without following redirects."""
+    _validated_url(url, asset=asset)
     request = urllib.request.Request(
-        url,
-        data=data,
-        headers=headers or {"User-Agent": "IndexCalculator"},
+        url, data=data, headers=headers or {"User-Agent": "IndexCalculator"}
     )
-    # Scheme is checked above, so the call cannot reach file/ or custom schemes.
-    return urllib.request.urlopen(request, timeout=timeout)  # nosec B310
+    opener = urllib.request.build_opener(_NoRedirectHandler())
+    return opener.open(request, timeout=timeout)
 
 
 def _request(url, payload, timeout=40):
@@ -108,8 +152,8 @@ def _request(url, payload, timeout=40):
         data=json.dumps(payload).encode("utf-8"),
     )
     with response:
-        if not response.geturl().lower().startswith("https://"):
-            raise ValueError("The catalogue redirected to a non-secure URL.")
+        if response.geturl() != url:
+            raise ValueError("Unexpected catalogue URL change.")
         return json.load(response)
 
 
@@ -159,19 +203,22 @@ def preview_url(item):
     assets = item.get("assets", {})
     for key in _PREVIEW_ASSETS:
         href = assets.get(key, {}).get("href", "")
-        if href.lower().startswith("https://"):
+        try:
+            _validated_url(href, asset=True)
             return href
+        except ValueError:
+            continue
     return None
 
 
 def fetch_preview(url, max_bytes=8 * 1024 * 1024):
     """Downloads a preview image with a size limit."""
-    if not url or not url.lower().startswith("https://"):
+    if not url:
         raise ValueError("The preview URL is not secure.")
-    response = _open_https(url, 60)
+    response = _open_https(url, 60, asset=True)
     with response:
-        if not response.geturl().lower().startswith("https://"):
-            raise ValueError("The preview redirected to a non-secure URL.")
+        if response.geturl() != url:
+            raise ValueError("Unexpected preview URL change.")
         data = response.read(max_bytes + 1)
     if len(data) > max_bytes:
         raise ValueError("The preview image is too large.")
@@ -223,18 +270,27 @@ def _collect_coordinates(node, xs, ys):
 
 
 def _signed_href(href, sas):
-    if sas and any(host in href for host in PC_SIGNED_HOSTS):
+    host = urlsplit(str(href)).hostname or ""
+    if sas and host.lower() in PC_SIGNED_HOSTS:
         separator = "&" if "?" in href else "?"
-        return href + separator + sas
+        return href + separator + sas.lstrip("?")
     return href
 
 
 def _sas_query(satellite):
     url = PC_SAS_ENDPOINT % COLLECTIONS[satellite]
     with _open_https(url, 40) as response:
-        if not response.geturl().lower().startswith("https://"):
+        if response.geturl() != url:
             return ""
         return json.load(response).get("token", "")
+
+
+def _safe_output_path(out_dir, filename):
+    base = os.path.abspath(out_dir)
+    path = os.path.abspath(os.path.join(base, filename))
+    if os.path.commonpath([base, path]) != base:
+        raise ValueError("Output path is outside the selected folder.")
+    return path
 
 
 def download_item(item, bbox, out_dir, progress=None, cutline=None):
@@ -246,9 +302,17 @@ def download_item(item, bbox, out_dir, progress=None, cutline=None):
     from osgeo import gdal
 
     gdal.UseExceptions()
+    gdal.SetConfigOption("GDAL_HTTP_MAX_RETRY", "2")
+    gdal.SetConfigOption("GDAL_HTTP_TIMEOUT", "30")
+    gdal.SetConfigOption("GDAL_HTTP_CONNECTTIMEOUT", "10")
     os.makedirs(out_dir, exist_ok=True)
 
-    xmin, ymin, xmax, ymax = bbox
+    xmin, ymin, xmax, ymax = [float(v) for v in bbox]
+    if not (-180 <= xmin < xmax <= 180 and -90 <= ymin < ymax <= 90):
+        raise ValueError("Invalid WGS84 download bounds.")
+    scene_id = str(item.get("id", ""))
+    if not SCENE_ID_RE.fullmatch(scene_id) or scene_id in (".", ".."):
+        raise ValueError("Invalid scene identifier.")
     proj_win = [xmin, ymax, xmax, ymin]
 
     mapping = assets_for(item)
@@ -264,15 +328,20 @@ def download_item(item, bbox, out_dir, progress=None, cutline=None):
 
     for index, (asset, code) in enumerate(available, 1):
         href = _signed_href(item["assets"][asset].get("href", ""), sas)
+        try:
+            _validated_url(href, asset=True)
+        except ValueError:
+            missing.append(code)
+            continue
         if progress:
             progress(index - 1, total, code)
         if not href.lower().startswith("https://"):
             missing.append(code)
             continue
-        out_path = os.path.join(out_dir, "%s_%s.tif" % (item["id"], code))
+        out_path = _safe_output_path(out_dir, "%s_%s.tif" % (scene_id, code))
         try:
             if cutline:
-                tmp_path = os.path.join(out_dir, ".%s_window.tif" % code)
+                tmp_path = _safe_output_path(out_dir, ".%s_window.tif" % code)
                 try:
                     gdal.Translate(
                         tmp_path,
@@ -303,6 +372,16 @@ def download_item(item, bbox, out_dir, progress=None, cutline=None):
                     creationOptions=["COMPRESS=DEFLATE", "TILED=YES"],
                 )
             if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                check_ds = gdal.Open(out_path, gdal.GA_ReadOnly)
+                if check_ds is None:
+                    raise ValueError("Output raster could not be opened.")
+                if (check_ds.RasterXSize > MAX_RASTER_DIMENSION
+                        or check_ds.RasterYSize > MAX_RASTER_DIMENSION
+                        or check_ds.RasterCount > MAX_RASTER_BANDS):
+                    check_ds = None
+                    os.remove(out_path)
+                    raise ValueError("Raster dimensions or band count exceed safety limits.")
+                check_ds = None
                 written.append(code)
             else:
                 missing.append(code)

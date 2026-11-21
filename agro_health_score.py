@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator Field Health Score (transparent, exploratory multicriteria score)."""
+"""Index Calculator Pro Field Health Score (transparent, exploratory multicriteria score)."""
 import math
 from qgis.core import (
     QgsProcessingAlgorithm, QgsProcessingParameterFeatureSource,
@@ -22,25 +22,25 @@ class FieldHealthScoreAlgorithm(QgsProcessingAlgorithm):
     def group(self): return 'Agricultural preprocessing'
     def groupId(self): return 'agricultural_intelligence'
     def shortHelpString(self):
-        return ('Calcule un score exploratoire 0-100 par parcelle à partir des moyennes NDVI, NDMI et NDRE. '
-                'Chaque indice est normalisé selon ses bornes min/max saisies puis combiné avec les poids NDVI/NDMI/NDRE. '
-                'Ce score n’est pas un diagnostic de santé, rendement, maladie ou sécheresse. Les indices, leurs bornes, '
-                'les poids, le stade cultural, la date et la qualité des images doivent être vérifiés et adaptés. '
-                'Les trois rasters doivent être monobande, co-enregistrés, alignés et dans le même CRS que les parcelles.')
+        return ('Computes an exploratory 0-100 score per parcel from the NDVI, NDMI and NDRE means. '
+                'Each index is normalised with the min/max bounds you enter, then combined with the NDVI/NDMI/NDRE weights. '
+                'This score is not a diagnosis of health, yield, disease or drought. The indices, their bounds, '
+                'the weights, the crop stage, the date and the image quality must be checked and adapted. '
+                'The three rasters must be single-band, co-registered, aligned and in the same CRS as the parcels.')
     def createInstance(self): return FieldHealthScoreAlgorithm()
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS, 'Parcelles agricoles (polygones)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.NDVI, 'Raster NDVI (bande 1)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.NDMI, 'Raster NDMI (bande 1)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.NDRE, 'Raster NDRE (bande 1)'))
-        for key, label, default in ((self.NDVI_MIN,'NDVI minimum pour normalisation',-1.0),(self.NDVI_MAX,'NDVI maximum pour normalisation',1.0),
-                                    (self.NDMI_MIN,'NDMI minimum pour normalisation',-1.0),(self.NDMI_MAX,'NDMI maximum pour normalisation',1.0),
-                                    (self.NDRE_MIN,'NDRE minimum pour normalisation',-1.0),(self.NDRE_MAX,'NDRE maximum pour normalisation',1.0)):
+        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS, 'Agricultural parcels (polygons)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.NDVI, 'NDVI raster (band 1)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.NDMI, 'NDMI raster (band 1)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.NDRE, 'NDRE raster (band 1)'))
+        for key, label, default in ((self.NDVI_MIN,'NDVI minimum for normalisation',-1.0),(self.NDVI_MAX,'NDVI maximum for normalisation',1.0),
+                                    (self.NDMI_MIN,'NDMI minimum for normalisation',-1.0),(self.NDMI_MAX,'NDMI maximum for normalisation',1.0),
+                                    (self.NDRE_MIN,'NDRE minimum for normalisation',-1.0),(self.NDRE_MAX,'NDRE maximum for normalisation',1.0)):
             self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Double,default))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDVI,'Poids NDVI (%)',QgsProcessingParameterNumber.Double,50,minValue=0,maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDMI,'Poids NDMI (%)',QgsProcessingParameterNumber.Double,30,minValue=0,maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDRE,'Poids NDRE (%)',QgsProcessingParameterNumber.Double,20,minValue=0,maxValue=100))
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcelles avec Field Health Score'))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDVI,'NDVI weight (%)',QgsProcessingParameterNumber.Double,50,minValue=0,maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDMI,'NDMI weight (%)',QgsProcessingParameterNumber.Double,30,minValue=0,maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDRE,'NDRE weight (%)',QgsProcessingParameterNumber.Double,20,minValue=0,maxValue=100))
+        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcels with Field Health Score'))
 
     def _mean_in_polygon(self, raster, block, geom, feedback):
         ext=raster.extent(); cols=raster.width(); rows=raster.height(); dx=ext.width()/cols; dy=ext.height()/rows
@@ -64,30 +64,30 @@ class FieldHealthScoreAlgorithm(QgsProcessingAlgorithm):
         source=self.parameterAsSource(parameters,self.POLYGONS,context)
         rasters={k:self.parameterAsRasterLayer(parameters,k,context) for k in (self.NDVI,self.NDMI,self.NDRE)}
         if source is None or any(r is None or not r.isValid() for r in rasters.values()):
-            raise QgsProcessingException('Entrées invalides.')
+            raise QgsProcessingException('Invalid inputs.')
         if source.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon):
-            raise QgsProcessingException('La couche de parcelles doit être polygonale.')
+            raise QgsProcessingException('The parcel layer must be a polygon layer.')
         crs=source.sourceCrs()
         first=rasters[self.NDVI]
         for key,r in rasters.items():
-            if r.crs()!=crs: raise QgsProcessingException('Parcelles et rasters doivent partager le CRS. Reprojeter avant le traitement.')
+            if r.crs()!=crs: raise QgsProcessingException('Parcels and rasters must share the same CRS. Reproject before processing.')
             if r.crs()!=first.crs() or r.width()!=first.width() or r.height()!=first.height() or r.extent()!=first.extent():
-                raise QgsProcessingException('Les trois rasters doivent être alignés (CRS, dimensions, extent et grille).')
+                raise QgsProcessingException('The three rasters must be aligned (CRS, dimensions, extent and grid).')
         ranges={self.NDVI:(self.parameterAsDouble(parameters,self.NDVI_MIN,context),self.parameterAsDouble(parameters,self.NDVI_MAX,context)),
                 self.NDMI:(self.parameterAsDouble(parameters,self.NDMI_MIN,context),self.parameterAsDouble(parameters,self.NDMI_MAX,context)),
                 self.NDRE:(self.parameterAsDouble(parameters,self.NDRE_MIN,context),self.parameterAsDouble(parameters,self.NDRE_MAX,context))}
         for k,(lo,hi) in ranges.items():
-            if hi<=lo: raise QgsProcessingException(f'Bornes de normalisation invalides pour {k}: maximum doit dépasser minimum.')
+            if hi<=lo: raise QgsProcessingException(f'Invalid normalisation bounds for {k}: the maximum must be greater than the minimum.')
         weights={self.NDVI:self.parameterAsDouble(parameters,self.W_NDVI,context),self.NDMI:self.parameterAsDouble(parameters,self.W_NDMI,context),self.NDRE:self.parameterAsDouble(parameters,self.W_NDRE,context)}
         total=sum(weights.values())
-        if total<=0: raise QgsProcessingException('La somme des poids doit être positive.')
+        if total<=0: raise QgsProcessingException('The sum of the weights must be positive.')
         fields=QgsFields(source.fields())
         for name,typ in [('ag_ndvi',QVariant.Double),('ag_ndmi',QVariant.Double),('ag_ndre',QVariant.Double),('ag_health',QVariant.Double),('ag_health_class',QVariant.String),('ag_pixels',QVariant.LongLong)]: fields.append(QgsField(name,typ))
         sink,dest=self.parameterAsSink(parameters,self.OUTPUT,context,fields,source.wkbType(),crs)
-        if sink is None: raise QgsProcessingException('Création de la couche de sortie impossible.')
+        if sink is None: raise QgsProcessingException('The output layer could not be created.')
         feats=list(source.getFeatures()); n=max(len(feats),1)
         raster_blocks={k:r.dataProvider().block(1,r.extent(),r.width(),r.height()) for k,r in rasters.items()}
-        if any(b is None or b.isEmpty() for b in raster_blocks.values()): raise QgsProcessingException('Impossible de lire un raster d’entrée.')
+        if any(b is None or b.isEmpty() for b in raster_blocks.values()): raise QgsProcessingException('An input raster could not be read.')
         for i,feat in enumerate(feats):
             if feedback.isCanceled(): break
             geom=feat.geometry(); means={}; counts={}

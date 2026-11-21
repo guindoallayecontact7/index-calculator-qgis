@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.0 - Edge & Multi-date Boundary Intelligence.
+"""Index Calculator Pro - Edge & Multi-date Boundary Intelligence.
 Creates an exploratory boundary-candidate score from local spatial gradients and
 multi-date index change. It is NOT a parcel boundary probability model.
 """

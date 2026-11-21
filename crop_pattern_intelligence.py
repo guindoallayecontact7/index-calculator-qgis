@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.6 - transparent exploratory crop-pattern clustering."""
+"""Index Calculator Pro - transparent exploratory crop-pattern clustering."""
 import math
 
 

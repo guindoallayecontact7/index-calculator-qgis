@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator temporal monitoring tools (prototype)."""
+"""Index Calculator Pro temporal monitoring tools (prototype)."""
 from qgis.core import (QgsProcessingAlgorithm, QgsProcessingParameterRasterLayer,
                       QgsProcessingParameterRasterDestination, QgsProcessingException,
                       QgsProcessingParameterFeatureSource, QgsProcessingParameterFeatureSink,
@@ -18,30 +18,30 @@ class RasterChangeAlgorithm(QgsProcessingAlgorithm):
     def group(self): return 'Crop Monitoring'
     def groupId(self): return 'crop_monitoring'
     def shortHelpString(self):
-        return ('Calcul pixel à pixel de Date 2 - Date 1. Les deux rasters doivent avoir le même CRS, extent, dimensions et grille. '
-                'Utiliser de préférence le même indice, la même échelle de réflectance et une période/correction comparable. '
-                'Le résultat est une différence numérique, pas un diagnostic agronomique.')
+        return ('Pixel-by-pixel calculation of Date 2 - Date 1. Both rasters must share the CRS, extent, dimensions and grid. '
+                'Preferably use the same index, the same reflectance scale and a comparable period and correction. '
+                'The result is a numerical difference, not an agronomic diagnosis.')
     def createInstance(self): return RasterChangeAlgorithm()
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterRasterLayer(self.BASE,'Raster de référence - Date 1'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.CURRENT,'Raster récent - Date 2'))
-        self.addParameter(QgsProcessingParameterRasterDestination(self.OUTPUT,'Raster de changement (Date 2 - Date 1)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.BASE,'Reference raster - Date 1'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.CURRENT,'Recent raster - Date 2'))
+        self.addParameter(QgsProcessingParameterRasterDestination(self.OUTPUT,'Change raster (Date 2 - Date 1)'))
     def processAlgorithm(self, parameters, context, feedback):
         a=self.parameterAsRasterLayer(parameters,self.BASE,context)
         b=self.parameterAsRasterLayer(parameters,self.CURRENT,context)
         if not a or not b or not a.isValid() or not b.isValid():
-            raise QgsProcessingException('Les deux rasters doivent être valides.')
+            raise QgsProcessingException('Both rasters must be valid.')
         if a.crs()!=b.crs() or a.width()!=b.width() or a.height()!=b.height() or a.extent()!=b.extent():
-            raise QgsProcessingException('Grilles différentes : CRS, dimensions et extent doivent être identiques. Reprojeter/rééchantillonner avant le calcul.')
+            raise QgsProcessingException('Different grids: CRS, dimensions and extent must be identical. Reproject or resample before the calculation.')
         entries=[]
         for lyr,role in ((a,'A'),(b,'B')):
-            e=QgsRasterCalculatorEntry(); e.raster=lyr; e.bandNumber=1; e.ref=lyr.name()+'@1'; entries.append(e)
-        formula='"'+b.name()+'@1" - "'+a.name()+'@1"'
+            e=QgsRasterCalculatorEntry(); e.raster=lyr; e.bandNumber=1; e.ref=role+'@1'; entries.append(e)
+        formula='"B@1" - "A@1"'
         out=self.parameterAsOutputLayer(parameters,self.OUTPUT,context)
         from .raster_calc import calculate
         erreur=calculate(formula,out,a.extent(),a.crs(),a.width(),a.height(),entries,context.transformContext(),feedback)
         if erreur:
-            raise QgsProcessingException('Calcul de différence échoué : '+erreur)
+            raise QgsProcessingException('Difference calculation failed: '+erreur)
         return {self.OUTPUT:out}
 
 
@@ -52,31 +52,31 @@ class TemporalFieldComparisonAlgorithm(QgsProcessingAlgorithm):
     def group(self): return 'Crop Monitoring'
     def groupId(self): return 'crop_monitoring'
     def shortHelpString(self):
-        return ('Compare la moyenne des pixels de deux rasters dans chaque parcelle, en échantillonnant les centres de pixels. '
-                'Ajoute ag_t1, ag_t2, ag_delta et ag_pct. Les rasters doivent partager CRS, dimensions, extent et grille. '
-                'Le pourcentage est calculé par rapport à abs(moyenne Date 1); il est NULL si Date 1 est proche de zéro. '
-                'Des valeurs de différence ne constituent pas un diagnostic de culture.')
+        return ('Compares the mean pixel value of two rasters in each parcel, sampling pixel centres. '
+                'Adds ag_t1, ag_t2, ag_delta and ag_pct. The rasters must share the CRS, dimensions, extent and grid. '
+                'The percentage is relative to abs(Date 1 mean); it is NULL when Date 1 is close to zero. '
+                'Difference values are not a crop diagnosis.')
     def createInstance(self): return TemporalFieldComparisonAlgorithm()
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS,'Parcelles agricoles (polygones)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.BASE,'Raster Date 1 (indice)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.CURRENT,'Raster Date 2 (même indice)'))
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcelles comparées'))
+        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS,'Agricultural parcels (polygons)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.BASE,'Date 1 raster (index)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.CURRENT,'Date 2 raster (same index)'))
+        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Compared parcels'))
     def processAlgorithm(self, parameters, context, feedback):
         src=self.parameterAsSource(parameters,self.POLYGONS,context)
         a=self.parameterAsRasterLayer(parameters,self.BASE,context); b=self.parameterAsRasterLayer(parameters,self.CURRENT,context)
-        if src is None or not a or not b or not a.isValid() or not b.isValid(): raise QgsProcessingException('Entrées invalides.')
-        if src.sourceCrs()!=a.crs() or a.crs()!=b.crs(): raise QgsProcessingException('Les trois couches doivent partager le même CRS.')
-        if a.width()!=b.width() or a.height()!=b.height() or a.extent()!=b.extent(): raise QgsProcessingException('Les rasters doivent être parfaitement alignés (dimensions et extent).')
-        if src.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon): raise QgsProcessingException('La couche doit être polygonale.')
+        if src is None or not a or not b or not a.isValid() or not b.isValid(): raise QgsProcessingException('Invalid inputs.')
+        if src.sourceCrs()!=a.crs() or a.crs()!=b.crs(): raise QgsProcessingException('The three layers must share the same CRS.')
+        if a.width()!=b.width() or a.height()!=b.height() or a.extent()!=b.extent(): raise QgsProcessingException('The rasters must be perfectly aligned (dimensions and extent).')
+        if src.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon): raise QgsProcessingException('The layer must be a polygon layer.')
         ext=a.extent(); cols=a.width(); rows=a.height(); dx=ext.width()/cols; dy=ext.height()/rows
         blk1=a.dataProvider().block(1,ext,cols,rows); blk2=b.dataProvider().block(1,ext,cols,rows)
-        if blk1 is None or blk2 is None or blk1.isEmpty() or blk2.isEmpty(): raise QgsProcessingException('Lecture raster impossible.')
+        if blk1 is None or blk2 is None or blk1.isEmpty() or blk2.isEmpty(): raise QgsProcessingException('The raster could not be read.')
         fields=QgsFields(src.fields())
         for fld in (QgsField('ag_t1',QVariant.Double),QgsField('ag_t2',QVariant.Double),QgsField('ag_delta',QVariant.Double),QgsField('ag_pct',QVariant.Double)):
             fields.append(fld)
         sink,dest=self.parameterAsSink(parameters,self.OUTPUT,context,fields,src.wkbType(),src.sourceCrs())
-        if sink is None: raise QgsProcessingException('Sink de sortie impossible.')
+        if sink is None: raise QgsProcessingException('The output sink could not be created.')
         total=max(src.featureCount(),1); done=0
         for f in src.getFeatures():
             if feedback.isCanceled(): break

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.2 - explainable parcel candidate geometry metrics."""
+"""Index Calculator Pro - explainable parcel candidate geometry metrics."""
 import math
 
 def shape_metrics(area_m2, perimeter_m, bbox_area_m2):

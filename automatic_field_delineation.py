@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.9 - exploratory spectral connected-component field delineation.
+"""Index Calculator Pro - exploratory spectral connected-component field delineation.
 Segments connected pixels whose index values are within a seed tolerance. This is
 NOT a validated parcel boundary model and should be reviewed against reference data.
 """
@@ -99,8 +99,8 @@ class AutomaticFieldDelineationAlgorithm:
                 vec=ogr.GetDriverByName('Memory').CreateDataSource('segments')
                 srs=osr.SpatialReference(); srs.ImportFromWkt(ds.GetProjection())
                 lyr=vec.CreateLayer('segments',srs,ogr.wkbPolygon)
-                # Polygonize (GDAL >= 3.11) écrit le numéro de région dans le
-                # premier champ : DN doit donc être créé en premier.
+                # Polygonize (GDAL >= 3.11) writes the region number into the
+                # first field, so DN must be created first.
                 lyr.CreateField(ogr.FieldDefn('DN',ogr.OFTInteger))
                 lyr.CreateField(ogr.FieldDefn('seg_id',ogr.OFTInteger)); lyr.CreateField(ogr.FieldDefn('px_count',ogr.OFTInteger))
                 lyr.CreateField(ogr.FieldDefn('idx_mean',ogr.OFTReal)); lyr.CreateField(ogr.FieldDefn('size_ok',ogr.OFTInteger))

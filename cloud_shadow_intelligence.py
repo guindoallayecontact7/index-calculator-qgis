@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.6 Cloud & Shadow Intelligence (GDAL/NumPy runtime)."""
+"""Index Calculator Pro Cloud & Shadow Intelligence (GDAL/NumPy runtime)."""
 from qgis.core import (QgsProcessingAlgorithm, QgsProcessingParameterRasterLayer,
                       QgsProcessingParameterRasterDestination, QgsProcessingException)
 
@@ -31,7 +31,7 @@ class _BaseCloudMask(QgsProcessingAlgorithm):
         mask_ds = driver.Create(mask_out, image_ds.RasterXSize, image_ds.RasterYSize, 1, gdal.GDT_Byte, options=['COMPRESS=LZW'])
         mask_ds.SetGeoTransform(image_ds.GetGeoTransform()); mask_ds.SetProjection(image_ds.GetProjection())
         mb = mask_ds.GetRasterBand(1); mb.WriteArray(mask_array.astype(np.uint8)); mb.SetNoDataValue(0)
-        mask_ds.SetMetadata({'AGROGEO_AI_MASK_CONVENTION':'1=clear/retained; 0=masked'})
+        mask_ds.SetMetadata({'INDEX_CALCULATOR_PRO_MASK_CONVENTION':'1=clear/retained; 0=masked'})
         mask_ds.FlushCache(); mask_ds = None
         # Clean image is Float32 to support a consistent -9999 nodata sentinel across input types.
         clean_ds = driver.Create(clean_out, image_ds.RasterXSize, image_ds.RasterYSize, image_ds.RasterCount, gdal.GDT_Float32, options=['COMPRESS=LZW'])
@@ -150,7 +150,7 @@ class CloudMaskSummaryAlgorithm(QgsProcessingAlgorithm):
         report = self.parameterAsFileOutput(parameters, self.REPORT, context)
         import html, os, datetime
         os.makedirs(os.path.dirname(report) or '.', exist_ok=True)
-        title = 'Index Calculator - Cloud Mask Coverage Summary'
+        title = 'Index Calculator Pro - Cloud Mask Coverage Summary'
         body = ('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+title+'</title>'
                '<style>body{font-family:Arial,sans-serif;margin:2rem;color:#203040}table{border-collapse:collapse}td,th{padding:.7rem;border:1px solid #ccc}th{background:#f0f3f5}</style></head><body>'
                '<h1>'+title+'</h1><p>Generated: '+html.escape(datetime.datetime.now().isoformat(timespec='seconds'))+'</p>'

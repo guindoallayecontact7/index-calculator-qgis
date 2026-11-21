@@ -1,8 +1,11 @@
 """
 Background worker - processes indices with resampling to same resolution.
 """
+import logging
 import os, numpy as np, tempfile
 from qgis.PyQt.QtCore import QThread, pyqtSignal
+
+_LOG = logging.getLogger(__name__)
 
 try:
     from osgeo import gdal, ogr, osr
@@ -110,7 +113,8 @@ class ProcessingWorker(QThread):
                 if valid_mask is not None and arr.shape == valid_mask.shape:
                     arr = apply_mask_to_array(arr, valid_mask)
                 bands[key] = arr
-            except Exception:  # nosec B112
+            except Exception as exc:
+                _LOG.debug("Band skipped: %s", exc)
                 continue
 
         if not bands:
@@ -167,8 +171,10 @@ class ProcessingWorker(QThread):
                 if use_clip:
                     clipped = os.path.join(out_dir, f"{idx_key}.tif")
                     self._clip(raw_path, shp_path, clipped)
-                    try: os.remove(raw_path)
-                    except Exception: pass  # nosec B110
+                    try:
+                        os.remove(raw_path)
+                    except OSError as exc:
+                        _LOG.debug("Temporary file kept: %s", exc)
                     final = clipped if os.path.exists(clipped) else raw_path
                 else:
                     final = raw_path
@@ -373,5 +379,5 @@ class ProcessingWorker(QThread):
                       dstNodata=float("nan"),
                       format="GTiff",
                       creationOptions=["COMPRESS=LZW"])
-        except Exception:  # nosec B110
-            pass
+        except Exception as exc:
+            _LOG.debug("Ignored error: %s", exc)

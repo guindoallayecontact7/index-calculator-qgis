@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""QgsRasterCalculator compatible entre versions de QGIS.
+"""QgsRasterCalculator wrapper that works across QGIS versions.
 
-Le constructeur accepte un QgsFeedback selon les builds (le 3.44 LTR ne
-l'expose pas). Le paramètre reste donc facultatif à l'appel.
+The constructor takes a QgsFeedback on some builds (3.44 LTR does not
+expose it), so the argument stays optional.
 """
 from qgis.analysis import QgsRasterCalculator
 
 
 def calculate(formula, output, extent, crs, width, height, entries,
               transform_context, feedback):
-    """Lance le calcul ; renvoie None en cas de succès, sinon le message d'erreur."""
+    """Runs the calculation; returns None on success, otherwise the error message."""
     args = (formula, output, "GTiff", extent, crs, width, height, entries,
             transform_context)
     try:

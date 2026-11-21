@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.5 - configurable, non-destructive candidate refinement.
+"""Index Calculator Pro - configurable, non-destructive candidate refinement.
 Candidate features are routed to accepted/rejected outputs with reason fields.
 No input geometry is altered or repaired.
 """

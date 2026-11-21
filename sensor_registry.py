@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator Sensor Intelligence Registry (V3.2)."""
+"""Index Calculator Pro Sensor Intelligence Registry."""
 from html import escape
 
 SENSORS = {
@@ -30,7 +30,7 @@ def html_report(results):
         mapping=', '.join(f'{escape(k)} -> {escape(v)}' for k,v in result['mapping'].items()) or 'None'
         missing=', '.join(result['missing']) or 'None'
         rows.append(f'<tr><td>{escape(method)}</td><td>{escape(SENSORS[sensor_key]["label"])}</td><td>{escape(state)}</td><td>{mapping}</td><td>{escape(missing)}</td></tr>')
-    return '''<!doctype html><html><head><meta charset="utf-8"><title>Index Calculator Sensor Compatibility</title><style>body{font-family:Arial,sans-serif;margin:28px;color:#203040}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#e8f0f4}h1{color:#176b45}</style></head><body><h1>Index Calculator - Sensor Compatibility Report</h1><p>Compatibility is based on spectral band roles only. It does not validate reflectance scaling, atmospheric correction, spatial resolution harmonization, cloud masking, or scientific suitability.</p><table><thead><tr><th>Method</th><th>Sensor</th><th>Status</th><th>Band mapping</th><th>Missing roles</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table></body></html>'''
+    return '''<!doctype html><html><head><meta charset="utf-8"><title>Index Calculator Pro Sensor Compatibility</title><style>body{font-family:Arial,sans-serif;margin:28px;color:#203040}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#e8f0f4}h1{color:#176b45}</style></head><body><h1>Index Calculator Pro - Sensor Compatibility Report</h1><p>Compatibility is based on spectral band roles only. It does not validate reflectance scaling, atmospheric correction, spatial resolution harmonization, cloud masking, or scientific suitability.</p><table><thead><tr><th>Method</th><th>Sensor</th><th>Status</th><th>Band mapping</th><th>Missing roles</th></tr></thead><tbody>''' + ''.join(rows) + '''</tbody></table></body></html>'''
 
 try:
     from qgis.core import (QgsProcessingAlgorithm, QgsProcessingParameterEnum,

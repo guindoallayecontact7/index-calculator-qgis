@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.1 - Boundary candidate extraction.
+"""Index Calculator Pro - Boundary candidate extraction.
 Thresholds a boundary-candidate score raster and polygonizes non-boundary regions.
 These are candidate regions, not validated agricultural parcels.
 """
@@ -38,13 +38,13 @@ class BoundaryExtractionAlgorithm:
             def group(self): return 'Parcel analysis'
             def groupId(self): return 'crop_parcel_intelligence'
             def shortHelpString(self):
-                return ('Thresholds the V4.0 boundary-candidate score and polygonizes connected regions below the threshold. '
+                return ('Thresholds the boundary-candidate score and polygonizes connected regions below the threshold. '
                         'Outputs candidate regions only, not validated parcels. Use aligned rasters and inspect results.')
             def createInstance(self): return BoundaryExtractionAlgorithm()
             def initAlgorithm(self,config=None):
                 from qgis.core import (QgsProcessingParameterRasterLayer,QgsProcessingParameterNumber,
                                     QgsProcessingParameterEnum,QgsProcessingParameterFeatureSink)
-                self.addParameter(QgsProcessingParameterRasterLayer(self.R,'Boundary candidate score raster (V4.0)'))
+                self.addParameter(QgsProcessingParameterRasterLayer(self.R,'Boundary candidate score raster'))
                 self.addParameter(QgsProcessingParameterNumber(self.T,'Boundary threshold',QgsProcessingParameterNumber.Double,0.35,minValue=0,maxValue=1))
                 self.addParameter(QgsProcessingParameterNumber(self.MIN,'Minimum region size (pixels)',QgsProcessingParameterNumber.Integer,4,minValue=1))
                 self.addParameter(QgsProcessingParameterEnum(self.CON,'Connectivity',options=['4-connected','8-connected'],defaultValue=0))
@@ -83,8 +83,8 @@ class BoundaryExtractionAlgorithm:
                 if srs.IsGeographic(): raise QgsProcessingException('Area calculation requires a projected CRS with linear units. Reproject the score raster first.')
                 linear_factor=float(srs.GetLinearUnits())
                 vl=vds.CreateLayer('regions',srs,ogr.wkbPolygon)
-                # Polygonize (GDAL >= 3.11) écrit le numéro de région dans le
-                # premier champ : DN doit donc être créé en premier.
+                # Polygonize (GDAL >= 3.11) writes the region number into the
+                # first field, so DN must be created first.
                 vl.CreateField(ogr.FieldDefn('DN',ogr.OFTInteger))
                 vl.CreateField(ogr.FieldDefn('cand_id',ogr.OFTInteger)); vl.CreateField(ogr.FieldDefn('pixel_n',ogr.OFTInteger))
                 vl.CreateField(ogr.FieldDefn('edge_mean',ogr.OFTReal)); vl.CreateField(ogr.FieldDefn('area_ha',ogr.OFTReal))

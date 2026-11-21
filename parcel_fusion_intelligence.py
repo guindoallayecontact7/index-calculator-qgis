@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V4.3 - explainable parcel candidate fusion scoring."""
+"""Index Calculator Pro - explainable parcel candidate fusion scoring."""
 import math
 
 

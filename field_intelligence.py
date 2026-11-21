@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator Field Intelligence: grid-center zonal statistics (prototype)."""
+"""Index Calculator Pro Field Intelligence: grid-center zonal statistics (prototype)."""
 from qgis.core import (QgsProcessingAlgorithm, QgsProcessingParameterFeatureSource,
     QgsProcessingParameterRasterLayer, QgsProcessingParameterFeatureSink,
     QgsProcessingException, QgsFeature, QgsFields, QgsField, QgsFeatureSink,
@@ -15,31 +15,31 @@ class FieldZonalStatsAlgorithm(QgsProcessingAlgorithm):
     def group(self): return 'Field statistics'
     def groupId(self): return 'field_intelligence'
     def shortHelpString(self):
-        return ('Calcule min, max, moyenne, mediane, ecart-type et nombre de pixels valides pour chaque entite polygonale. '
-                'Echantillonnage aux centres des pixels. Raster et vecteur doivent partager le meme CRS. '
+        return ('Computes min, max, mean, median, standard deviation and valid pixel count for each polygon. '
+                'Sampling at pixel centres. Raster and vector must share the same CRS. '
                 'Statistiques descriptives, non diagnostiques agronomiques.')
     def createInstance(self): return FieldZonalStatsAlgorithm()
     def initAlgorithm(self, config=None):
-        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS,'Parcelles (polygones)'))
-        self.addParameter(QgsProcessingParameterRasterLayer(self.RASTER,'Raster indice (bande 1)'))
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcelles avec statistiques'))
+        self.addParameter(QgsProcessingParameterFeatureSource(self.POLYGONS,'Parcels (polygons)'))
+        self.addParameter(QgsProcessingParameterRasterLayer(self.RASTER,'Index raster (band 1)'))
+        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcels with statistics'))
     def processAlgorithm(self, parameters, context, feedback):
         source=self.parameterAsSource(parameters,self.POLYGONS,context)
         raster=self.parameterAsRasterLayer(parameters,self.RASTER,context)
         if source is None or raster is None or not raster.isValid():
             raise QgsProcessingException('Source polygonale ou raster invalide.')
         if source.sourceCrs()!=raster.crs():
-            raise QgsProcessingException('CRS differents. Reprojeter les parcelles ou le raster avant traitement.')
+            raise QgsProcessingException('Different CRS. Reproject the parcels or the raster before processing.')
         if source.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
-            raise QgsProcessingException('La couche de parcelles doit contenir des polygones.')
+            raise QgsProcessingException('The parcel layer must contain polygons.')
         extent=raster.extent(); cols=raster.width(); rows=raster.height(); provider=raster.dataProvider()
         block=provider.block(1,extent,cols,rows)
-        if block is None or block.isEmpty(): raise QgsProcessingException('Impossible de lire la bande raster.')
+        if block is None or block.isEmpty(): raise QgsProcessingException('The raster band could not be read.')
         dx=extent.width()/cols; dy=extent.height()/rows; nodata=block.noDataValue()
         out_fields=QgsFields(source.fields())
         for fld in [QgsField('ag_min',QVariant.Double),QgsField('ag_max',QVariant.Double),QgsField('ag_mean',QVariant.Double),QgsField('ag_median',QVariant.Double),QgsField('ag_std',QVariant.Double),QgsField('ag_count',QVariant.LongLong)]: out_fields.append(fld)
         (sink,dest)=self.parameterAsSink(parameters,self.OUTPUT,context,out_fields,source.wkbType(),source.sourceCrs())
-        if sink is None: raise QgsProcessingException('Creation du fichier de sortie impossible.')
+        if sink is None: raise QgsProcessingException('The output file could not be created.')
         total=source.featureCount(); done=0
         for feature in source.getFeatures():
             if feedback.isCanceled(): break

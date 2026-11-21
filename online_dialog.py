@@ -4,7 +4,12 @@ QGIS download tools: product search, area of interest, product list, download
 and log sections.
 """
 
+import logging
+
+_LOG = logging.getLogger(__name__)
+
 import os
+import re
 
 from qgis.PyQt.QtCore import QDate, Qt, QThread, pyqtSignal
 from qgis.PyQt.QtGui import QPixmap
@@ -19,6 +24,15 @@ from .online_imagery import (
     LANDSAT_PLATFORMS, download_item, fetch_preview, geojson_extent,
     layer_extent, preview_url, search_items,
 )
+
+
+_PRIMARY_STYLE = """
+QPushButton#primary {
+    background-color: palette(highlight); color: palette(highlighted-text);
+    font-weight: bold; border: none; border-radius: 4px; padding: 5px 14px;
+}
+QPushButton#primary:disabled { background-color: palette(mid); color: palette(window); }
+"""
 
 
 def _section(title):
@@ -158,6 +172,7 @@ class OnlineImageryDialog(QDialog):
         self.setWindowTitle("Download products - Index Calculator Pro")
         self.setMinimumWidth(700)
         self.setMinimumHeight(640)
+        self.setStyleSheet(_PRIMARY_STYLE)
         self._build()
 
     # -- UI --------------------------------------------------------------------
@@ -166,19 +181,19 @@ class OnlineImageryDialog(QDialog):
         root.setContentsMargins(10, 8, 10, 10)
         root.setSpacing(4)
 
-        root.addWidget(_section("PRODUCT SEARCH"))
+        root.addWidget(_section("1   Product search"))
         root.addLayout(self._search_form())
 
-        root.addWidget(_section("AREA OF INTEREST"))
+        root.addWidget(_section("2   Area of interest"))
         root.addLayout(self._area_form())
 
-        root.addWidget(_section("PRODUCT LIST"))
+        root.addWidget(_section("3   Products found"))
         root.addWidget(self._product_list(), 1)
 
-        root.addWidget(_section("DOWNLOAD"))
+        root.addWidget(_section("4   Download"))
         root.addLayout(self._download_form())
 
-        root.addWidget(_section("LOG"))
+        root.addWidget(_section("Log"))
         self.log = QPlainTextEdit()
         self.log.setReadOnly(True)
         self.log.setMaximumBlockCount(300)
@@ -238,7 +253,8 @@ class OnlineImageryDialog(QDialog):
         grid.addWidget(self.max_cloud, 2, 1)
 
         self.search_btn = QPushButton("Search products")
-        self.search_btn.setMinimumHeight(28)
+        self.search_btn.setMinimumHeight(30)
+        self.search_btn.setObjectName("primary")
         self.search_btn.clicked.connect(self._search)
         grid.addWidget(self.search_btn, 3, 0, 1, 4)
         return grid
@@ -343,8 +359,10 @@ class OnlineImageryDialog(QDialog):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        self.table.setColumnWidth(0, 110)
+        self.table.setColumnWidth(1, 100)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.table.itemSelectionChanged.connect(self._selection_changed)
         self.table.cellDoubleClicked.connect(lambda row, column: self._preview())
@@ -371,7 +389,8 @@ class OnlineImageryDialog(QDialog):
         lay.addLayout(folder_row)
 
         self.download_btn = QPushButton("Download product")
-        self.download_btn.setMinimumHeight(28)
+        self.download_btn.setMinimumHeight(30)
+        self.download_btn.setObjectName("primary")
         self.download_btn.clicked.connect(self._download)
         lay.addWidget(self.download_btn)
 
@@ -393,8 +412,8 @@ class OnlineImageryDialog(QDialog):
             self.layer_lbl.setText("Using extent of: %s" % layer.name())
             try:
                 self._set_manual(layer_extent(layer))
-            except Exception:  # nosec B110
-                pass
+            except Exception as exc:
+                _LOG.debug("Ignored error: %s", exc)
         else:
             self.layer_lbl.setText("No active layer selected in the Layers panel.")
 
@@ -409,7 +428,7 @@ class OnlineImageryDialog(QDialog):
                 self._set_manual(self._file_bbox(path))
                 self._log("Boundary loaded: %s" % os.path.basename(path))
             except Exception as exc:
-                QMessageBox.warning(self, "Index Calculator", str(exc))
+                QMessageBox.warning(self, "Index Calculator Pro", str(exc))
 
     def _browse_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Output directory")
@@ -485,7 +504,7 @@ class OnlineImageryDialog(QDialog):
     def _preview(self):
         row = self.table.currentRow()
         if row < 0 or row >= len(self.items):
-            QMessageBox.warning(self, "Index Calculator", "Select a product in the list.")
+            QMessageBox.warning(self, "Index Calculator Pro", "Select a product in the list.")
             return
         item = self.items[row]
         dialog = PreviewDialog(item, self)
@@ -511,7 +530,7 @@ class OnlineImageryDialog(QDialog):
         try:
             bbox = self._bbox()
         except Exception as exc:
-            QMessageBox.warning(self, "Index Calculator", str(exc))
+            QMessageBox.warning(self, "Index Calculator Pro", str(exc))
             return
         sensor = self.satellite.currentText()
         missions = self.satellite.itemData(
@@ -528,7 +547,7 @@ class OnlineImageryDialog(QDialog):
             )
         except Exception as exc:
             self._log("Search failed: %s" % exc)
-            QMessageBox.warning(self, "Index Calculator", "Search failed: %s" % exc)
+            QMessageBox.warning(self, "Index Calculator Pro", "Search failed: %s" % exc)
             self.search_btn.setEnabled(True)
             return
 
@@ -561,21 +580,29 @@ class OnlineImageryDialog(QDialog):
     def _download(self):
         row = self.table.currentRow()
         if row < 0 or row >= len(self.items):
-            QMessageBox.warning(self, "Index Calculator", "Select a product in the list.")
+            QMessageBox.warning(self, "Index Calculator Pro", "Select a product in the list.")
             return
         folder = self.folder_edit.text().strip()
         if not folder:
-            QMessageBox.warning(self, "Index Calculator", "Choose an output directory.")
+            QMessageBox.warning(self, "Index Calculator Pro", "Choose an output directory.")
             return
         try:
             bbox = self._bbox()
         except Exception as exc:
-            QMessageBox.warning(self, "Index Calculator", str(exc))
+            QMessageBox.warning(self, "Index Calculator Pro", str(exc))
             return
 
         item = self.items[row]
         cutline = self._cutline()
-        scene_dir = os.path.join(folder, item["id"])
+        scene_id = str(item.get("id", ""))
+        if not re.fullmatch(r"[A-Za-z0-9_.-]{1,150}", scene_id) or scene_id in (".", ".."):
+            QMessageBox.warning(self, "Index Calculator Pro", "Invalid scene identifier.")
+            return
+        scene_dir = os.path.abspath(os.path.join(folder, scene_id))
+        base_dir = os.path.abspath(folder)
+        if os.path.commonpath([base_dir, scene_dir]) != base_dir:
+            QMessageBox.warning(self, "Index Calculator Pro", "Invalid output path.")
+            return
         self.download_btn.setEnabled(False)
         self.search_btn.setEnabled(False)
         self.close_btn.setEnabled(False)
@@ -609,7 +636,7 @@ class OnlineImageryDialog(QDialog):
         self.progress.setVisible(False)
         self._reset_buttons()
         self._log("Download failed: %s" % message)
-        QMessageBox.warning(self, "Index Calculator", "Download failed: %s" % message)
+        QMessageBox.warning(self, "Index Calculator Pro", "Download failed: %s" % message)
 
     def _reset_buttons(self):
         self.download_btn.setEnabled(True)
@@ -619,7 +646,7 @@ class OnlineImageryDialog(QDialog):
     def closeEvent(self, event):
         if self.worker is not None and self.worker.isRunning():
             QMessageBox.information(
-                self, "Index Calculator",
+                self, "Index Calculator Pro",
                 "The download is still running. Wait for it to finish before closing.")
             event.ignore()
             return
@@ -630,6 +657,6 @@ class OnlineImageryDialog(QDialog):
         if self._previous_tool is not None and self.iface is not None:
             try:
                 self.iface.mapCanvas().setMapTool(self._previous_tool)
-            except Exception:  # nosec B110
-                pass
+            except Exception as exc:
+                _LOG.debug("Ignored error: %s", exc)
             self._previous_tool = None

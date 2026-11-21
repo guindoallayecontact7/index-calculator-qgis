@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Index Calculator V3.7 Agricultural Intelligence preprocessing algorithm.
+"""Index Calculator Pro Agricultural Intelligence preprocessing algorithm.
 Provides a reproducible combined QA-mask + raster-cleaning workflow.
 No atmospheric correction, radiometric harmonization, index calculation, or crop diagnosis.
 """
@@ -80,7 +80,7 @@ if QgsProcessingAlgorithm is not object:
             mask_ds.SetGeoTransform(img.GetGeoTransform()); mask_ds.SetProjection(img.GetProjection())
             mask_write = mask.copy(); mask_write[~qa_valid] = 255
             mb = mask_ds.GetRasterBand(1); mb.WriteArray(mask_write); mb.SetNoDataValue(255)
-            mask_ds.SetMetadata({'AGROGEO_AI_MASK_CONVENTION':'1=clear/retained; 0=masked; 255=NoData'})
+            mask_ds.SetMetadata({'INDEX_CALCULATOR_PRO_MASK_CONVENTION':'1=clear/retained; 0=masked; 255=NoData'})
             mask_ds.FlushCache(); mask_ds = None
             clean_ds = driver.Create(clean_path, img.RasterXSize, img.RasterYSize, img.RasterCount, gdal.GDT_Float32, options=['COMPRESS=LZW'])
             clean_ds.SetGeoTransform(img.GetGeoTransform()); clean_ds.SetProjection(img.GetProjection())
@@ -107,9 +107,9 @@ if QgsProcessingAlgorithm is not object:
             masked_pct = 100.0 * masked_count / valid_count if valid_count else 0.0
             method_name = METHODS[max(0, min(method, len(METHODS)-1))]
             os.makedirs(os.path.dirname(report_path) or '.', exist_ok=True)
-            report = ('<!doctype html><html><head><meta charset="utf-8"><title>Index Calculator QA report</title>'
+            report = ('<!doctype html><html><head><meta charset="utf-8"><title>Index Calculator Pro QA report</title>'
                 '<style>body{font-family:Arial,sans-serif;margin:2em;color:#243447}table{border-collapse:collapse}td,th{padding:8px;border:1px solid #ddd}th{background:#f3f5f7}</style></head><body>'
-                '<h1>Index Calculator - QA Mask and Clean Raster</h1><p>Generated: '+html.escape(datetime.datetime.now().isoformat(timespec='seconds'))+'</p>'
+                '<h1>Index Calculator Pro - QA Mask and Clean Raster</h1><p>Generated: '+html.escape(datetime.datetime.now().isoformat(timespec='seconds'))+'</p>'
                 '<table><tr><th>Metric</th><th>Value</th></tr><tr><td>Mask method</td><td>'+html.escape(method_name)+'</td></tr>'
                 '<tr><td>Valid image pixels (band 1)</td><td>'+str(valid_count)+'</td></tr><tr><td>Clear/retained pixels</td><td>'+str(clear_count)+'</td></tr>'
                 '<tr><td>Masked pixels</td><td>'+str(masked_count)+'</td></tr><tr><td>Clear coverage</td><td>'+format(clear_pct,'.2f')+'%</td></tr>'
