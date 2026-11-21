@@ -35,7 +35,7 @@ class ParcelTopologyAuditAlgorithm:
             def initAlgorithm(self,config=None):
                 from qgis.core import QgsProcessingParameterFeatureSource,QgsProcessingParameterFeatureSink,QgsProcessingParameterNumber
                 self.addParameter(QgsProcessingParameterFeatureSource(self.INPUT,'Candidate polygons'))
-                self.addParameter(QgsProcessingParameterNumber(self.OVERLAP_TOL,'Overlap reporting tolerance (m²)',QgsProcessingParameterNumber.Double,defaultValue=0.01,minValue=0))
+                self.addParameter(QgsProcessingParameterNumber(self.OVERLAP_TOL,'Overlap reporting tolerance (m²)',QgsProcessingParameterNumber.Type.Double,defaultValue=0.01,minValue=0))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Polygons with topology audit fields'))
             def processAlgorithm(self,parameters,context,feedback):
                 from qgis.core import (QgsProcessingException,QgsFields,QgsField,QgsFeature,QgsFeatureSink,
@@ -43,11 +43,11 @@ class ParcelTopologyAuditAlgorithm:
                 from qgis.PyQt.QtCore import QVariant
                 source=self.parameterAsSource(parameters,self.INPUT,context)
                 if source is None: raise QgsProcessingException('Invalid polygon source.')
-                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.PolygonGeometry:
+                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.GeometryType.PolygonGeometry:
                     raise QgsProcessingException('Input must be polygon geometry.')
                 crs=source.sourceCrs()
                 if crs.isGeographic(): raise QgsProcessingException('Use a projected CRS with linear units for topology area metrics.')
-                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceMeters)
+                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceUnit.DistanceMeters)
                 tolerance=self.parameterAsDouble(parameters,self.OVERLAP_TOL,context)
                 feats=list(source.getFeatures())
                 index=QgsSpatialIndex(); geoms={}; valid={}; part_count={}
@@ -98,7 +98,7 @@ class ParcelTopologyAuditAlgorithm:
                     while len(attrs)<fields.count(): attrs.append(None)
                     vals={'topo_valid':is_valid,'topo_area_ha':area_ha,'topo_perim_m':perim,'topo_parts':parts,'topo_neighbors':n,'topo_overlap_m2':overlap,'topo_overlap_n':pairs,'topo_status':status}
                     for name,value in vals.items(): attrs[indices[name]]=value
-                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.FastInsert)
+                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.Flag.FastInsert)
                     done+=1
                     if total: feedback.setProgress(int(done*100/total))
                 feedback.pushInfo(f'Topology audit completed for {done} polygons. Input geometry preserved; gaps are not assessed.')

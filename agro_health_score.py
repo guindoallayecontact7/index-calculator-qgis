@@ -36,10 +36,10 @@ class FieldHealthScoreAlgorithm(QgsProcessingAlgorithm):
         for key, label, default in ((self.NDVI_MIN,'NDVI minimum for normalisation',-1.0),(self.NDVI_MAX,'NDVI maximum for normalisation',1.0),
                                     (self.NDMI_MIN,'NDMI minimum for normalisation',-1.0),(self.NDMI_MAX,'NDMI maximum for normalisation',1.0),
                                     (self.NDRE_MIN,'NDRE minimum for normalisation',-1.0),(self.NDRE_MAX,'NDRE maximum for normalisation',1.0)):
-            self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Double,default))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDVI,'NDVI weight (%)',QgsProcessingParameterNumber.Double,50,minValue=0,maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDMI,'NDMI weight (%)',QgsProcessingParameterNumber.Double,30,minValue=0,maxValue=100))
-        self.addParameter(QgsProcessingParameterNumber(self.W_NDRE,'NDRE weight (%)',QgsProcessingParameterNumber.Double,20,minValue=0,maxValue=100))
+            self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Type.Double,default))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDVI,'NDVI weight (%)',QgsProcessingParameterNumber.Type.Double,50,minValue=0,maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDMI,'NDMI weight (%)',QgsProcessingParameterNumber.Type.Double,30,minValue=0,maxValue=100))
+        self.addParameter(QgsProcessingParameterNumber(self.W_NDRE,'NDRE weight (%)',QgsProcessingParameterNumber.Type.Double,20,minValue=0,maxValue=100))
         self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Parcels with Field Health Score'))
 
     def _mean_in_polygon(self, raster, block, geom, feedback):
@@ -65,7 +65,7 @@ class FieldHealthScoreAlgorithm(QgsProcessingAlgorithm):
         rasters={k:self.parameterAsRasterLayer(parameters,k,context) for k in (self.NDVI,self.NDMI,self.NDRE)}
         if source is None or any(r is None or not r.isValid() for r in rasters.values()):
             raise QgsProcessingException('Invalid inputs.')
-        if source.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon):
+        if source.wkbType() not in (QgsWkbTypes.Type.Polygon,QgsWkbTypes.Type.MultiPolygon):
             raise QgsProcessingException('The parcel layer must be a polygon layer.')
         crs=source.sourceCrs()
         first=rasters[self.NDVI]
@@ -103,5 +103,5 @@ class FieldHealthScoreAlgorithm(QgsProcessingAlgorithm):
             elif score>=40: klass='MEDIUM'
             else: klass='LOW'
             out=QgsFeature(fields); out.setGeometry(geom); out.setAttributes(feat.attributes()+[means[self.NDVI],means[self.NDMI],means[self.NDRE],score,klass,min(counts.values())])
-            sink.addFeature(out,QgsFeatureSink.FastInsert); feedback.setProgress(int((i+1)*100/n))
+            sink.addFeature(out,QgsFeatureSink.Flag.FastInsert); feedback.setProgress(int((i+1)*100/n))
         return {self.OUTPUT:dest}

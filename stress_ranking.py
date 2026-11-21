@@ -25,7 +25,7 @@ class StressDetectionAlgorithm(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterRasterLayer(self.BEFORE, 'Index raster - Date 1 (before)'))
         self.addParameter(QgsProcessingParameterRasterLayer(self.AFTER, 'Index raster - Date 2 (after)'))
-        self.addParameter(QgsProcessingParameterNumber(self.THRESHOLD, 'Minimum drop threshold (Date 1 - Date 2)', QgsProcessingParameterNumber.Double, 0.15, False, 0.0))
+        self.addParameter(QgsProcessingParameterNumber(self.THRESHOLD, 'Minimum drop threshold (Date 1 - Date 2)', QgsProcessingParameterNumber.Type.Double, 0.15, False, 0.0))
         self.addParameter(QgsProcessingParameterRasterDestination(self.OUTPUT, 'Anomaly mask (1 = drop above the threshold)'))
     def processAlgorithm(self, parameters, context, feedback):
         before=self.parameterAsRasterLayer(parameters,self.BEFORE,context)
@@ -66,7 +66,7 @@ class FieldRankingAlgorithm(QgsProcessingAlgorithm):
         raster=self.parameterAsRasterLayer(parameters,self.RASTER,context)
         if source is None or raster is None or not raster.isValid(): raise QgsProcessingException('Invalid inputs.')
         if source.sourceCrs()!=raster.crs(): raise QgsProcessingException('Parcels and raster must share the CRS. Reproject before processing.')
-        if source.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon): raise QgsProcessingException('The layer must be a polygon layer.')
+        if source.wkbType() not in (QgsWkbTypes.Type.Polygon,QgsWkbTypes.Type.MultiPolygon): raise QgsProcessingException('The layer must be a polygon layer.')
         ext=raster.extent(); cols=raster.width(); rows=raster.height(); dx=ext.width()/cols; dy=ext.height()/rows
         block=raster.dataProvider().block(1,ext,cols,rows)
         if block is None or block.isEmpty(): raise QgsProcessingException('The raster could not be read.')
@@ -100,5 +100,5 @@ class FieldRankingAlgorithm(QgsProcessingAlgorithm):
             elif n and rank<=max(1,math.ceil(n*0.2)): priority='HIGH'
             elif n and rank<=max(1,math.ceil(n*0.5)): priority='MEDIUM'
             else: priority='LOW'
-            out=QgsFeature(fields); out.setGeometry(feat.geometry()); out.setAttributes(feat.attributes()+[mean,rank,count,priority]); sink.addFeature(out,QgsFeatureSink.FastInsert)
+            out=QgsFeature(fields); out.setGeometry(feat.geometry()); out.setAttributes(feat.attributes()+[mean,rank,count,priority]); sink.addFeature(out,QgsFeatureSink.Flag.FastInsert)
         return {self.OUTPUT:dest}

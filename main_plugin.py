@@ -79,7 +79,7 @@ class IndexCalculatorPlugin:
         try:
             from qgis.core import QgsRasterBandStats
             provider = layer.dataProvider()
-            stats = provider.bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
+            stats = provider.bandStatistics(1, QgsRasterBandStats.Stats.All, layer.extent(), 0)
             vals = [stats.minimumValue, stats.maximumValue, stats.mean, stats.stdDev]
             if not all(v == v for v in vals):
                 raise ValueError("Invalid statistics or empty raster.")

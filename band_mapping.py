@@ -57,7 +57,7 @@ if QgsProcessingAlgorithm is not object:
     def shortHelpString(self): return 'Heuristically maps raster layer names to spectral roles. Review the report; ambiguous names can be misidentified.'
     def createInstance(self): return AutomaticBandMappingAlgorithm()
     def initAlgorithm(self,config=None):
-        self.addParameter(QgsProcessingParameterMultipleLayers(self.LAYERS,'Raster layers to inspect',layerType=QgsProcessing.TypeRaster))
+        self.addParameter(QgsProcessingParameterMultipleLayers(self.LAYERS,'Raster layers to inspect',layerType=QgsProcessing.SourceType.TypeRaster))
         self.addParameter(QgsProcessingParameterEnum(self.SENSOR,'Sensor profile',options=SENSORS,defaultValue=0))
         self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT,'HTML mapping report','HTML files (*.html)'))
     def processAlgorithm(self,parameters,context,feedback):
@@ -87,7 +87,7 @@ if QgsProcessingAlgorithm is not object:
     def shortHelpString(self): return 'Compares selected rasters with a reference grid and outputs a harmonization plan. It does not resample or reproject.'
     def createInstance(self): return RasterHarmonizationReadinessAlgorithm()
     def initAlgorithm(self,config=None):
-        self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUTS,'Rasters to compare',layerType=QgsProcessing.TypeRaster))
+        self.addParameter(QgsProcessingParameterMultipleLayers(self.INPUTS,'Rasters to compare',layerType=QgsProcessing.SourceType.TypeRaster))
         self.addParameter(QgsProcessingParameterRasterLayer(self.REFERENCE,'Reference raster/grid'))
         self.addParameter(QgsProcessingParameterFileDestination(self.OUTPUT,'HTML harmonization report','HTML files (*.html)'))
     def processAlgorithm(self,parameters,context,feedback):

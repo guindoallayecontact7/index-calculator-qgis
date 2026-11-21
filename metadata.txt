@@ -3,7 +3,7 @@ name=Index Calculator Pro
 qgisMinimumVersion=3.16
 qgisMaximumVersion=4.99
 description=Index Calculator Pro helps you turn a satellite scene into usable crop information inside QGIS. Search and download a Sentinel-2 or Landsat 4-9 scene for your area, check the bands, then compute 80 vegetation, water, soil and built-up indices. The same package brings 56 Processing Toolbox algorithms for field statistics, crop monitoring, stress ranking, cloud masking and parcel analysis. Developed by Allaye GUINDO.
-version=5.5.5
+version=5.5.6
 author=Allaye GUINDO
 email=guindo.allaye.contact@gmail.com
 
@@ -70,6 +70,9 @@ server=False
 hasProcessingProvider=yes
 
 changelog=
+    5.5.6 - Fixed the Plugin Security Audit report, which failed on its HTML template.
+          - Qt6 / QGIS 4 compatibility: 63 enum values written in their fully scoped form (QgsWkbTypes.Type.Polygon,
+            QgsFeatureSink.Flag.FastInsert, QgsProcessingParameterNumber.Type.Double...), as reported by the plugins.qgis.org check.
     5.5.5 - Stable release. Every menu, dialog and report titled Index Calculator Pro.
           - Redesigned main window: header with version and Help, numbered steps (Image, Settings, Indices), dashed drop zone,
             status line, highlighted Generate button that stays disabled until data and indices are ready.

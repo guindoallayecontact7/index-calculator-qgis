@@ -45,8 +45,8 @@ class ParcelShapeIntelligenceAlgorithm:
                 if source is None: raise QgsProcessingException('Invalid polygon source.')
                 crs=source.sourceCrs()
                 if crs.isGeographic(): raise QgsProcessingException('Use a projected CRS with linear units; geographic degrees are not suitable for area/perimeter metrics.')
-                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceMeters)
-                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.PolygonGeometry:
+                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceUnit.DistanceMeters)
+                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.GeometryType.PolygonGeometry:
                     raise QgsProcessingException('Input must contain polygon geometries.')
                 fields=QgsFields(source.fields())
                 additions=[('shape_area_ha',QVariant.Double),('shape_perim_m',QVariant.Double),('shape_compact',QVariant.Double),('shape_elong',QVariant.Double),('shape_rect',QVariant.Double),('shape_complex',QVariant.Double),('shape_score',QVariant.Double)]
@@ -70,7 +70,7 @@ class ParcelShapeIntelligenceAlgorithm:
                     while len(attrs)<fields.count(): attrs.append(None)
                     values={'shape_area_ha':area/10000.0,'shape_perim_m':per,'shape_compact':m['compactness'],'shape_elong':m['elongation'],'shape_rect':m['rectangularity'],'shape_complex':m['complexity'],'shape_score':m['shape_score']}
                     for n,val in values.items(): attrs[metric_index[n]]=val
-                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.FastInsert)
+                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.Flag.FastInsert)
                     done+=1
                     if total: feedback.setProgress(int(done*100/total))
                 feedback.pushInfo(f'Geometry metrics added to {done} candidate polygons. Shape score is descriptive, not parcel validation.')

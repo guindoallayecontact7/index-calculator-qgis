@@ -61,7 +61,7 @@ def _html_report(findings, scanned_files):
     if not rows:
         rows.append("<tr><td colspan='5'>No rule-based findings were detected. This does not prove the plugin is secure.</td></tr>")
     return """<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Index Calculator Pro Security Audit</title>
-<style>body{font-family:Segoe UI,Arial,sans-serif;max-width:1200px;margin:28px auto;padding:0 18px;color:#26332b}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:8px;border:1px solid #d7ded9;text-align:left;vertical-align:top}th{background:#eef5ef}code{white-space:pre-wrap;overflow-wrap:anywhere}.note{padding:12px;background:#f4f4f4}</style></head><body>
+<style>body{{font-family:Segoe UI,Arial,sans-serif;max-width:1200px;margin:28px auto;padding:0 18px;color:#26332b}}table{{border-collapse:collapse;width:100%;font-size:13px}}th,td{{padding:8px;border:1px solid #d7ded9;text-align:left;vertical-align:top}}th{{background:#eef5ef}}code{{white-space:pre-wrap;overflow-wrap:anywhere}}.note{{padding:12px;background:#f4f4f4}}</style></head><body>
 <h1>Index Calculator Pro Security Audit</h1><p class='note'>Rule-based static scan. Findings require manual review. This report is not a penetration test and does not confirm exploitability.</p>
 <p>Files scanned: {files}</p><p>Critical: {critical} | High: {high} | Medium: {medium} | Low: {low}</p>
 <table><thead><tr><th>Level</th><th>File</th><th>Line</th><th>Rule</th><th>Code excerpt</th></tr></thead><tbody>{rows}</tbody></table></body></html>""".format(files=scanned_files, critical=counts["CRITICAL"], high=counts["HIGH"], medium=counts["MEDIUM"], low=counts["LOW"], rows="".join(rows))

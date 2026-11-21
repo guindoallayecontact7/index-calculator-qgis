@@ -72,7 +72,7 @@ class ParcelFusionIntelligenceAlgorithm:
                 self.addParameter(QgsProcessingParameterString(self.SHAPE_FIELD,'Geometry score field (0-1; blank to omit)',defaultValue='shape_score'))
                 self.addParameter(QgsProcessingParameterString(self.COVERAGE_FIELD,'Coverage field (optional; percent 0-100)',defaultValue='cp_cover_pct'))
                 for key,label,default in [(self.WS,'Spectral weight',0.35),(self.WT,'Temporal weight',0.25),(self.WE,'Boundary weight',0.20),(self.WG,'Geometry weight',0.20)]:
-                    self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Double,defaultValue=default,minValue=0,maxValue=1))
+                    self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Type.Double,defaultValue=default,minValue=0,maxValue=1))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Candidates with fusion metrics'))
             def processAlgorithm(self,parameters,context,feedback):
                 from qgis.core import QgsProcessingException,QgsFields,QgsField,QgsFeature,QgsFeatureSink
@@ -114,7 +114,7 @@ class ParcelFusionIntelligenceAlgorithm:
                     for name,val in vals.items():
                         idx=fields.indexOf(name)
                         if idx>=0: attrs[idx]=val
-                    out.setAttributes(attrs); sink.addFeature(out,QgsFeatureSink.FastInsert)
+                    out.setAttributes(attrs); sink.addFeature(out,QgsFeatureSink.Flag.FastInsert)
                     done+=1
                     if total: feedback.setProgress(int(done*100/total))
                 feedback.pushInfo(f'Fusion metrics written for {done} candidate features. Score is heuristic, not a probability.')

@@ -68,7 +68,7 @@ class TemporalFieldComparisonAlgorithm(QgsProcessingAlgorithm):
         if src is None or not a or not b or not a.isValid() or not b.isValid(): raise QgsProcessingException('Invalid inputs.')
         if src.sourceCrs()!=a.crs() or a.crs()!=b.crs(): raise QgsProcessingException('The three layers must share the same CRS.')
         if a.width()!=b.width() or a.height()!=b.height() or a.extent()!=b.extent(): raise QgsProcessingException('The rasters must be perfectly aligned (dimensions and extent).')
-        if src.wkbType() not in (QgsWkbTypes.Polygon,QgsWkbTypes.MultiPolygon): raise QgsProcessingException('The layer must be a polygon layer.')
+        if src.wkbType() not in (QgsWkbTypes.Type.Polygon,QgsWkbTypes.Type.MultiPolygon): raise QgsProcessingException('The layer must be a polygon layer.')
         ext=a.extent(); cols=a.width(); rows=a.height(); dx=ext.width()/cols; dy=ext.height()/rows
         blk1=a.dataProvider().block(1,ext,cols,rows); blk2=b.dataProvider().block(1,ext,cols,rows)
         if blk1 is None or blk2 is None or blk1.isEmpty() or blk2.isEmpty(): raise QgsProcessingException('The raster could not be read.')
@@ -95,6 +95,6 @@ class TemporalFieldComparisonAlgorithm(QgsProcessingAlgorithm):
             if v1:
                 m1=sum(v1)/len(v1); m2=sum(v2)/len(v2); delta=m2-m1; pct=(delta/abs(m1)*100.0) if abs(m1)>1e-12 else None
             else: m1=m2=delta=pct=None
-            out=QgsFeature(fields); out.setGeometry(geom); out.setAttributes(f.attributes()+[m1,m2,delta,pct]); sink.addFeature(out,QgsFeatureSink.FastInsert)
+            out=QgsFeature(fields); out.setGeometry(geom); out.setAttributes(f.attributes()+[m1,m2,delta,pct]); sink.addFeature(out,QgsFeatureSink.Flag.FastInsert)
             done+=1; feedback.setProgress(int(done*100/total))
         return {self.OUTPUT:dest}

@@ -17,6 +17,6 @@ def calculate(formula, output, extent, crs, width, height, entries,
     except TypeError:
         calc = QgsRasterCalculator(*args)
     result = calc.processCalculation(feedback)
-    if result != QgsRasterCalculator.Success:
+    if result != QgsRasterCalculator.Result.Success:
         return calc.lastError()
     return None

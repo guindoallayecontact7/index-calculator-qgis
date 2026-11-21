@@ -67,7 +67,7 @@ class CropPatternClusteringAlgorithm:
                 self.addParameter(QgsProcessingParameterFeatureSource(self.INPUT,'Parcel / field polygons'))
                 for key,label,default in [(self.FIELD1,'Metric field 1 (required)','NDVI_mean'),(self.FIELD2,'Metric field 2 (required)','NDVI_std'),(self.FIELD3,'Metric field 3 (optional)','NDMI_mean'),(self.FIELD4,'Metric field 4 (optional)','')]:
                     self.addParameter(QgsProcessingParameterString(key,label,defaultValue=default))
-                self.addParameter(QgsProcessingParameterNumber(self.K,'Number of clusters (K)',QgsProcessingParameterNumber.Integer,defaultValue=4,minValue=2,maxValue=10))
+                self.addParameter(QgsProcessingParameterNumber(self.K,'Number of clusters (K)',QgsProcessingParameterNumber.Type.Integer,defaultValue=4,minValue=2,maxValue=10))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Clustered polygons'))
             def processAlgorithm(self,parameters,context,feedback):
                 from qgis.core import QgsProcessingException,QgsFields,QgsField,QgsFeature,QgsFeatureSink
@@ -114,7 +114,7 @@ class CropPatternClusteringAlgorithm:
                     attrs[outidx['pattern_distance']]=float(d)
                     attrs[outidx['pattern_similarity']]=float(similarity)
                     attrs[outidx['pattern_metrics']]=';'.join(f'{name}={val:g}' for name,val in zip(fields_selected,vals))
-                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.FastInsert)
+                    nf.setAttributes(attrs); sink.addFeature(nf,QgsFeatureSink.Flag.FastInsert)
                     if len(featurelist): feedback.setProgress(int((n+1)*100/len(featurelist)))
                 feedback.pushInfo(f'Clustering complete: {len(featurelist)} polygons; {skipped} skipped for missing/non-numeric metrics; {len(centroids)} clusters.')
                 feedback.pushInfo('Metrics: '+', '.join(f'{name} mean={m:.6g}, sd={s:.6g}' for name,m,s in zip(fields_selected,means,stds)))

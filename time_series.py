@@ -46,7 +46,7 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Agricultural parcels (polygons)'))
-        self.addParameter(QgsProcessingParameterMultipleLayers(self.RASTERS, 'Index rasters in chronological order', layerType=QgsProcessing.TypeRaster))
+        self.addParameter(QgsProcessingParameterMultipleLayers(self.RASTERS, 'Index rasters in chronological order', layerType=QgsProcessing.SourceType.TypeRaster))
         self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Parcels - time series results'))
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -54,7 +54,7 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
         rasters = self.parameterAsLayerList(parameters, self.RASTERS, context)
         if src is None or not rasters or len(rasters) < 2:
             raise QgsProcessingException('Select the parcels and at least two dated rasters, in chronological order.')
-        if src.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
+        if src.wkbType() not in (QgsWkbTypes.Type.Polygon, QgsWkbTypes.Type.MultiPolygon):
             raise QgsProcessingException('The parcel layer must be a polygon layer.')
         for r in rasters:
             if r is None or not r.isValid():
@@ -126,6 +126,6 @@ class CropTimeSeriesAlgorithm(QgsProcessingAlgorithm):
                 mean = std = minimum = maximum = amplitude = trend = None
             out = QgsFeature(fields); out.setGeometry(geom)
             out.setAttributes(feat.attributes()+means+[mean,std,minimum,maximum,amplitude,trend,len(valid)])
-            sink.addFeature(out, QgsFeatureSink.FastInsert)
+            sink.addFeature(out, QgsFeatureSink.Flag.FastInsert)
             done += 1; feedback.setProgress(int(done*100/total))
         return {self.OUTPUT: dest}

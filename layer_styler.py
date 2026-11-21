@@ -94,7 +94,7 @@ def get_actual_stats(layer):
 
         stats = provider.bandStatistics(
             1,
-            QgsRasterBandStats.Min | QgsRasterBandStats.Max,
+            QgsRasterBandStats.Stats.Min | QgsRasterBandStats.Stats.Max,
             layer.extent(),
             0
         )
@@ -204,7 +204,7 @@ def apply_color_ramp(layer, index_key):
     shader_func = QgsColorRampShader()
 
     shader_func.setColorRampType(
-        QgsColorRampShader.Interpolated
+        QgsColorRampShader.Type.Interpolated
     )
 
     shader_func.setColorRampItemList(ramp_items)

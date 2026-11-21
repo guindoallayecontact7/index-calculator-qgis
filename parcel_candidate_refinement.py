@@ -44,10 +44,10 @@ class ParcelCandidateRefinementAlgorithm:
             def initAlgorithm(self,config=None):
                 from qgis.core import QgsProcessingParameterFeatureSource,QgsProcessingParameterFeatureSink,QgsProcessingParameterNumber,QgsProcessingParameterString,QgsProcessingParameterBoolean
                 self.addParameter(QgsProcessingParameterFeatureSource(self.INPUT,'Candidate polygons'))
-                self.addParameter(QgsProcessingParameterNumber(self.MIN_AREA,'Minimum area (ha; 0 disables)',QgsProcessingParameterNumber.Double,defaultValue=0,minValue=0))
-                self.addParameter(QgsProcessingParameterNumber(self.MAX_AREA,'Maximum area (ha; 0 disables)',QgsProcessingParameterNumber.Double,defaultValue=0,minValue=0))
+                self.addParameter(QgsProcessingParameterNumber(self.MIN_AREA,'Minimum area (ha; 0 disables)',QgsProcessingParameterNumber.Type.Double,defaultValue=0,minValue=0))
+                self.addParameter(QgsProcessingParameterNumber(self.MAX_AREA,'Maximum area (ha; 0 disables)',QgsProcessingParameterNumber.Type.Double,defaultValue=0,minValue=0))
                 self.addParameter(QgsProcessingParameterString(self.SHAPE_FIELD,'Optional shape score field (blank disables)',defaultValue='shape_score'))
-                self.addParameter(QgsProcessingParameterNumber(self.MIN_SHAPE,'Minimum shape score (0 disables)',QgsProcessingParameterNumber.Double,defaultValue=0,minValue=0,maxValue=1))
+                self.addParameter(QgsProcessingParameterNumber(self.MIN_SHAPE,'Minimum shape score (0 disables)',QgsProcessingParameterNumber.Type.Double,defaultValue=0,minValue=0,maxValue=1))
                 self.addParameter(QgsProcessingParameterBoolean(self.REJECT_INVALID,'Reject invalid geometries',defaultValue=True))
                 self.addParameter(QgsProcessingParameterBoolean(self.REJECT_OVERLAP,'Reject topo_status=OVERLAP (if field exists)',defaultValue=False))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.ACCEPTED,'Accepted candidates'))
@@ -57,10 +57,10 @@ class ParcelCandidateRefinementAlgorithm:
                 from qgis.PyQt.QtCore import QVariant
                 source=self.parameterAsSource(parameters,self.INPUT,context)
                 if source is None: raise QgsProcessingException('Invalid polygon source.')
-                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.PolygonGeometry: raise QgsProcessingException('Input must contain polygon geometries.')
+                if QgsWkbTypes.geometryType(source.wkbType()) != QgsWkbTypes.GeometryType.PolygonGeometry: raise QgsProcessingException('Input must contain polygon geometries.')
                 crs=source.sourceCrs()
                 if crs.isGeographic(): raise QgsProcessingException('Use a projected CRS for area thresholds.')
-                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceMeters)
+                factor=QgsUnitTypes.fromUnitToUnitFactor(crs.mapUnits(),QgsUnitTypes.DistanceUnit.DistanceMeters)
                 minarea=self.parameterAsDouble(parameters,self.MIN_AREA,context); maxarea=self.parameterAsDouble(parameters,self.MAX_AREA,context)
                 if maxarea>0 and minarea>maxarea: raise QgsProcessingException('Maximum area must be greater than or equal to minimum area.')
                 shape_field=self.parameterAsString(parameters,self.SHAPE_FIELD,context).strip(); shape_idx=source.fields().indexOf(shape_field) if shape_field else -1
@@ -96,8 +96,8 @@ class ParcelCandidateRefinementAlgorithm:
                     vals={'refine_status':'ACCEPTED' if keep else 'REJECTED','refine_reason':reason,'refine_area_ha':area_ha if math.isfinite(area_ha) else None,'refine_shape':shape}
                     for name,value in vals.items(): attrs[idxs[name]]=value
                     nf.setAttributes(attrs)
-                    if keep: accepted.addFeature(nf,QgsFeatureSink.FastInsert); nacc+=1
-                    else: rejected.addFeature(nf,QgsFeatureSink.FastInsert); nrej+=1
+                    if keep: accepted.addFeature(nf,QgsFeatureSink.Flag.FastInsert); nacc+=1
+                    else: rejected.addFeature(nf,QgsFeatureSink.Flag.FastInsert); nrej+=1
                     done+=1
                     if total: feedback.setProgress(int(done*100/total))
                 feedback.pushInfo(f'Refinement complete: {nacc} accepted; {nrej} rejected. Input geometries were not modified.')

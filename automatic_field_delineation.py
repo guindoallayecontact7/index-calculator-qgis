@@ -64,10 +64,10 @@ class AutomaticFieldDelineationAlgorithm:
                 from qgis.core import (QgsProcessingParameterRasterLayer, QgsProcessingParameterNumber,
                                    QgsProcessingParameterFeatureSink)
                 self.addParameter(QgsProcessingParameterRasterLayer(self.RASTER,'Clean single-band index raster (e.g., NDVI)'))
-                self.addParameter(QgsProcessingParameterNumber(self.TOL,'Seed similarity tolerance',QgsProcessingParameterNumber.Double,0.08,minValue=0.0,maxValue=2.0))
-                self.addParameter(QgsProcessingParameterNumber(self.MINPIX,'Minimum segment size (pixels)',QgsProcessingParameterNumber.Integer,3,minValue=1))
-                self.addParameter(QgsProcessingParameterNumber(self.LOW,'LOW class threshold',QgsProcessingParameterNumber.Double,0.20))
-                self.addParameter(QgsProcessingParameterNumber(self.HIGH,'MODERATE/HIGH threshold',QgsProcessingParameterNumber.Double,0.45))
+                self.addParameter(QgsProcessingParameterNumber(self.TOL,'Seed similarity tolerance',QgsProcessingParameterNumber.Type.Double,0.08,minValue=0.0,maxValue=2.0))
+                self.addParameter(QgsProcessingParameterNumber(self.MINPIX,'Minimum segment size (pixels)',QgsProcessingParameterNumber.Type.Integer,3,minValue=1))
+                self.addParameter(QgsProcessingParameterNumber(self.LOW,'LOW class threshold',QgsProcessingParameterNumber.Type.Double,0.20))
+                self.addParameter(QgsProcessingParameterNumber(self.HIGH,'MODERATE/HIGH threshold',QgsProcessingParameterNumber.Type.Double,0.45))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Spectral segment polygons'))
             def processAlgorithm(self, parameters, context, feedback):
                 import numpy as np
@@ -108,7 +108,7 @@ class AutomaticFieldDelineationAlgorithm:
                 gdal.Polygonize(mem.GetRasterBand(1),mem.GetRasterBand(1).GetMaskBand(),lyr,0,[],callback=None)
                 fields=QgsFields()
                 fields.append(QgsField('seg_id',QVariant.Int)); fields.append(QgsField('seg_px',QVariant.Int)); fields.append(QgsField('seg_mean',QVariant.Double)); fields.append(QgsField('size_ok',QVariant.Int)); fields.append(QgsField('seg_vigor',QVariant.String))
-                sink,dest=self.parameterAsSink(parameters,self.OUTPUT,context,fields,QgsWkbTypes.Polygon,layer.crs())
+                sink,dest=self.parameterAsSink(parameters,self.OUTPUT,context,fields,QgsWkbTypes.Type.Polygon,layer.crs())
                 if sink is None: raise QgsProcessingException('Output sink creation failed.')
                 for of in lyr:
                     if feedback.isCanceled(): break
@@ -117,7 +117,7 @@ class AutomaticFieldDelineationAlgorithm:
                     geom=QgsGeometry.fromWkt(of.GetGeometryRef().ExportToWkt())
                     f=QgsFeature(fields); f.setGeometry(geom)
                     f.setAttributes([sid,int(sizes[sid]),float(means[sid]),int(eligible[sid]),classify_segment(means[sid],low,high)])
-                    sink.addFeature(f,QgsFeatureSink.FastInsert)
+                    sink.addFeature(f,QgsFeatureSink.Flag.FastInsert)
                 vec=None; mem=None; ds=None
                 return {self.OUTPUT:dest}
         return _Alg()

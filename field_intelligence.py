@@ -30,7 +30,7 @@ class FieldZonalStatsAlgorithm(QgsProcessingAlgorithm):
             raise QgsProcessingException('Source polygonale ou raster invalide.')
         if source.sourceCrs()!=raster.crs():
             raise QgsProcessingException('Different CRS. Reproject the parcels or the raster before processing.')
-        if source.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
+        if source.wkbType() not in (QgsWkbTypes.Type.Polygon, QgsWkbTypes.Type.MultiPolygon):
             raise QgsProcessingException('The parcel layer must contain polygons.')
         extent=raster.extent(); cols=raster.width(); rows=raster.height(); provider=raster.dataProvider()
         block=provider.block(1,extent,cols,rows)
@@ -62,6 +62,6 @@ class FieldZonalStatsAlgorithm(QgsProcessingAlgorithm):
                 std=math.sqrt(sum((v-mean)**2 for v in vals)/n)
                 stats=[vals[0],vals[-1],mean,med,std,n]
             else: stats=[None,None,None,None,None,0]
-            out=QgsFeature(out_fields); out.setGeometry(geom); out.setAttributes(feature.attributes()+stats); sink.addFeature(out,QgsFeatureSink.FastInsert)
+            out=QgsFeature(out_fields); out.setGeometry(geom); out.setAttributes(feature.attributes()+stats); sink.addFeature(out,QgsFeatureSink.Flag.FastInsert)
             done+=1; feedback.setProgress(int(done*100/max(total,1)))
         return {self.OUTPUT:dest}

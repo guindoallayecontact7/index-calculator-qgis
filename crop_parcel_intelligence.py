@@ -52,8 +52,8 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterFeatureSource(self.PARCELS, 'Agricultural parcels (polygons)'))
         self.addParameter(QgsProcessingParameterRasterLayer(self.INDEX, 'Index raster (band 1)'))
         self.addParameter(QgsProcessingParameterString(self.INDEX_NAME, 'Index name', defaultValue='NDVI'))
-        self.addParameter(QgsProcessingParameterNumber(self.LOW, 'Lower threshold (LOW class)', QgsProcessingParameterNumber.Double, 0.20))
-        self.addParameter(QgsProcessingParameterNumber(self.MEDIUM, 'Upper threshold LOW / MODERATE', QgsProcessingParameterNumber.Double, 0.45))
+        self.addParameter(QgsProcessingParameterNumber(self.LOW, 'Lower threshold (LOW class)', QgsProcessingParameterNumber.Type.Double, 0.20))
+        self.addParameter(QgsProcessingParameterNumber(self.MEDIUM, 'Upper threshold LOW / MODERATE', QgsProcessingParameterNumber.Type.Double, 0.45))
         self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, 'Analysed parcels'))
     def processAlgorithm(self, parameters, context, feedback):
         source=self.parameterAsSource(parameters,self.PARCELS,context)
@@ -66,9 +66,9 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
             raise QgsProcessingException('The LOW threshold must be lower than the MODERATE/HIGH threshold.')
         if source.sourceCrs()!=raster.crs():
             raise QgsProcessingException('Different CRS: reproject the parcels or the raster before processing.')
-        if source.wkbType() not in (QgsWkbTypes.Polygon, QgsWkbTypes.MultiPolygon):
+        if source.wkbType() not in (QgsWkbTypes.Type.Polygon, QgsWkbTypes.Type.MultiPolygon):
             raise QgsProcessingException('The parcel layer must contain polygons.')
-        if raster.crs().mapUnits()!=QgsUnitTypes.DistanceMeters:
+        if raster.crs().mapUnits()!=QgsUnitTypes.DistanceUnit.DistanceMeters:
             raise QgsProcessingException('Area in hectares is only reliable with a projected CRS in metres. Reproject the layer.')
         extent=raster.extent(); cols=raster.width(); rows=raster.height(); provider=raster.dataProvider()
         block=provider.block(1,extent,cols,rows)
@@ -111,6 +111,6 @@ class CropParcelIntelligenceAlgorithm(QgsProcessingAlgorithm):
                 stats=[area_ha,vals[0],vals[-1],mean,median,std,count,coverage,index_name,vigor_class(mean,low,medium),parcel_confidence(count)]
             else:
                 stats=[area_ha,None,None,None,None,None,0,0.0,index_name,'NO_DATA','NO_DATA']
-            out=QgsFeature(out_fields); out.setGeometry(geom); out.setAttributes(feature.attributes()+stats); sink.addFeature(out,QgsFeatureSink.FastInsert)
+            out=QgsFeature(out_fields); out.setGeometry(geom); out.setAttributes(feature.attributes()+stats); sink.addFeature(out,QgsFeatureSink.Flag.FastInsert)
             done+=1; feedback.setProgress(int(done*100/max(total,1)))
         return {self.OUTPUT:dest}

@@ -45,8 +45,8 @@ class BoundaryExtractionAlgorithm:
                 from qgis.core import (QgsProcessingParameterRasterLayer,QgsProcessingParameterNumber,
                                     QgsProcessingParameterEnum,QgsProcessingParameterFeatureSink)
                 self.addParameter(QgsProcessingParameterRasterLayer(self.R,'Boundary candidate score raster'))
-                self.addParameter(QgsProcessingParameterNumber(self.T,'Boundary threshold',QgsProcessingParameterNumber.Double,0.35,minValue=0,maxValue=1))
-                self.addParameter(QgsProcessingParameterNumber(self.MIN,'Minimum region size (pixels)',QgsProcessingParameterNumber.Integer,4,minValue=1))
+                self.addParameter(QgsProcessingParameterNumber(self.T,'Boundary threshold',QgsProcessingParameterNumber.Type.Double,0.35,minValue=0,maxValue=1))
+                self.addParameter(QgsProcessingParameterNumber(self.MIN,'Minimum region size (pixels)',QgsProcessingParameterNumber.Type.Integer,4,minValue=1))
                 self.addParameter(QgsProcessingParameterEnum(self.CON,'Connectivity',options=['4-connected','8-connected'],defaultValue=0))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUT,'Candidate region polygons'))
             def processAlgorithm(self,parameters,context,feedback):
@@ -90,7 +90,7 @@ class BoundaryExtractionAlgorithm:
                 vl.CreateField(ogr.FieldDefn('edge_mean',ogr.OFTReal)); vl.CreateField(ogr.FieldDefn('area_ha',ogr.OFTReal))
                 gdal.Polygonize(mem.GetRasterBand(1),mem.GetRasterBand(1).GetMaskBand(),vl,0,[],callback=None)
                 fields=QgsFields(); fields.append(QgsField('cand_id',QVariant.Int)); fields.append(QgsField('pixel_n',QVariant.Int)); fields.append(QgsField('edge_mean',QVariant.Double)); fields.append(QgsField('area_ha',QVariant.Double))
-                sink,dest=self.parameterAsSink(parameters,self.OUT,context,fields,QgsWkbTypes.Polygon,layer.crs())
+                sink,dest=self.parameterAsSink(parameters,self.OUT,context,fields,QgsWkbTypes.Type.Polygon,layer.crs())
                 if sink is None: raise QgsProcessingException('Could not create output vector sink.')
                 gt=ds.GetGeoTransform(); pixel_area=abs(gt[1]*gt[5]-gt[2]*gt[4])*linear_factor*linear_factor; area_ha=pixel_area*sizes.get(1,0)/10000.0
                 # polygonized DN maps to candidate labels
@@ -101,7 +101,7 @@ class BoundaryExtractionAlgorithm:
                     geom=QgsGeometry.fromWkt(feat.GetGeometryRef().ExportToWkt())
                     f=QgsFeature(fields); f.setGeometry(geom)
                     f.setAttributes([cid,int(sizes[cid]),float(means[cid]),float(pixel_area*sizes[cid]/10000.0)])
-                    sink.addFeature(f,QgsFeatureSink.FastInsert)
+                    sink.addFeature(f,QgsFeatureSink.Flag.FastInsert)
                 vds=None; mem=None; ds=None
                 feedback.pushInfo('Candidate polygons extracted. These are low-score regions and require visual/field validation.')
                 return {self.OUT:dest}

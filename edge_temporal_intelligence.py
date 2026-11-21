@@ -49,7 +49,7 @@ class EdgeTemporalIntelligenceAlgorithm:
                 from qgis.core import QgsProcessingParameterRasterLayer,QgsProcessingParameterNumber,QgsProcessingParameterRasterDestination
                 self.addParameter(QgsProcessingParameterRasterLayer(self.D1,'Index raster - date 1'))
                 self.addParameter(QgsProcessingParameterRasterLayer(self.D2,'Index raster - date 2'))
-                self.addParameter(QgsProcessingParameterNumber(self.W,'Temporal change weight',QgsProcessingParameterNumber.Double,0.35,minValue=0,maxValue=1))
+                self.addParameter(QgsProcessingParameterNumber(self.W,'Temporal change weight',QgsProcessingParameterNumber.Type.Double,0.35,minValue=0,maxValue=1))
                 self.addParameter(QgsProcessingParameterRasterDestination(self.OUT,'Boundary candidate score raster'))
             def processAlgorithm(self,parameters,context,feedback):
                 import numpy as np
