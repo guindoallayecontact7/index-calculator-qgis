@@ -1,4 +1,4 @@
-# Index Calculator Pro 5.5.6
+# Index Calculator Pro 5.5.7
 
 ![Index Calculator Pro](logo.png)
 
@@ -82,9 +82,9 @@ QGIS > Extensions > Gérer et installer les extensions > Installer depuis un ZIP
 QGIS 3.16+ (testé sur 3.44 LTR), GDAL et numpy fournis par QGIS. Une connexion
 Internet est nécessaire uniquement pour le téléchargement en ligne des scènes.
 
-## Statut de validation (5.5.6)
+## Statut de validation (5.5.7)
 
-Vérifié sur la version 5.5.6, dans QGIS 3.44.15 :
+Vérifié sur la version 5.5.7, dans QGIS 3.44.15 :
 
 - Chargement de l'extension, enregistrement du provider Processing
   (56 algorithmes) et ouverture de toutes les fenêtres : OK.

@@ -66,11 +66,11 @@ class ParcelFusionIntelligenceAlgorithm:
             def initAlgorithm(self,config=None):
                 from qgis.core import QgsProcessingParameterFeatureSource,QgsProcessingParameterFeatureSink,QgsProcessingParameterString,QgsProcessingParameterNumber
                 self.addParameter(QgsProcessingParameterFeatureSource(self.INPUT,'Candidate polygons'))
-                self.addParameter(QgsProcessingParameterString(self.SPECTRAL_FIELD,'Spectral field (NDVI-like; blank to omit)',defaultValue='cp_mean'))
-                self.addParameter(QgsProcessingParameterString(self.TEMPORAL_FIELD,'Temporal score field (0-1; blank to omit)',defaultValue=''))
-                self.addParameter(QgsProcessingParameterString(self.EDGE_FIELD,'Boundary score field (0-1; blank to omit)',defaultValue=''))
-                self.addParameter(QgsProcessingParameterString(self.SHAPE_FIELD,'Geometry score field (0-1; blank to omit)',defaultValue='shape_score'))
-                self.addParameter(QgsProcessingParameterString(self.COVERAGE_FIELD,'Coverage field (optional; percent 0-100)',defaultValue='cp_cover_pct'))
+                self.addParameter(QgsProcessingParameterString(self.SPECTRAL_FIELD,'Spectral field (NDVI-like; blank to omit)',defaultValue='cp_mean',optional=True))
+                self.addParameter(QgsProcessingParameterString(self.TEMPORAL_FIELD,'Temporal score field (0-1; blank to omit)',defaultValue='',optional=True))
+                self.addParameter(QgsProcessingParameterString(self.EDGE_FIELD,'Boundary score field (0-1; blank to omit)',defaultValue='',optional=True))
+                self.addParameter(QgsProcessingParameterString(self.SHAPE_FIELD,'Geometry score field (0-1; blank to omit)',defaultValue='shape_score',optional=True))
+                self.addParameter(QgsProcessingParameterString(self.COVERAGE_FIELD,'Coverage field (optional; percent 0-100)',defaultValue='cp_cover_pct',optional=True))
                 for key,label,default in [(self.WS,'Spectral weight',0.35),(self.WT,'Temporal weight',0.25),(self.WE,'Boundary weight',0.20),(self.WG,'Geometry weight',0.20)]:
                     self.addParameter(QgsProcessingParameterNumber(key,label,QgsProcessingParameterNumber.Type.Double,defaultValue=default,minValue=0,maxValue=1))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Candidates with fusion metrics'))

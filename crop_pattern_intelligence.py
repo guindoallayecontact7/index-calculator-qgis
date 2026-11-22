@@ -66,7 +66,7 @@ class CropPatternClusteringAlgorithm:
                 from qgis.core import QgsProcessingParameterFeatureSource,QgsProcessingParameterString,QgsProcessingParameterNumber,QgsProcessingParameterFeatureSink
                 self.addParameter(QgsProcessingParameterFeatureSource(self.INPUT,'Parcel / field polygons'))
                 for key,label,default in [(self.FIELD1,'Metric field 1 (required)','NDVI_mean'),(self.FIELD2,'Metric field 2 (required)','NDVI_std'),(self.FIELD3,'Metric field 3 (optional)','NDMI_mean'),(self.FIELD4,'Metric field 4 (optional)','')]:
-                    self.addParameter(QgsProcessingParameterString(key,label,defaultValue=default))
+                    self.addParameter(QgsProcessingParameterString(key,label,defaultValue=default,optional=key in (self.FIELD3,self.FIELD4)))
                 self.addParameter(QgsProcessingParameterNumber(self.K,'Number of clusters (K)',QgsProcessingParameterNumber.Type.Integer,defaultValue=4,minValue=2,maxValue=10))
                 self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT,'Clustered polygons'))
             def processAlgorithm(self,parameters,context,feedback):
